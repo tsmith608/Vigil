@@ -4,7 +4,7 @@ import { Stars, useTexture } from "@react-three/drei";
 import { useRef, useState, useEffect } from "react";
 
 /* -------------------- EARTH COMPONENT -------------------- */
-function Earth() {
+function Earth({children}) {
   const texture = useTexture("/earth.jpg");
   const earthRef = useRef();
   const isDragging = useRef(false);
@@ -12,6 +12,8 @@ function Earth() {
   const prev = useRef({ x: 0, y: 0 });
   const sensitivity = 0.0025;
   const friction = 0.95;
+  const issMarkerRef = useRef();
+
 
   useFrame(() => {
     earthRef.current.rotation.y += velocity.current.x;
@@ -50,6 +52,7 @@ function Earth() {
     >
       <sphereGeometry args={[2, 64, 64]} />
       <meshStandardMaterial map={texture} metalness={0.3} roughness={0.7} />
+      {children}
     </mesh>
   );
 }
@@ -76,6 +79,40 @@ function StaticStars({ count = 4000, radius = 100 }) {
     </points>
   );
 }
+/* -------------------- ISS HANDLER -------------------- */
+function ISSMarker() {
+  const markerRef = useRef();
+
+  useEffect(() => {
+    async function fetchISS() {
+      try {
+        const res = await fetch("/api/iss");
+        const data = await res.json();
+
+        // scale to 2-unit Earth
+        const SCALE = 1 / 3185; 
+        const { x, y, z } = data.cartesian;
+
+        if (markerRef.current) {
+          markerRef.current.position.set(x * SCALE, y * SCALE, z * SCALE);
+          console.log("ISS Cartesian scaled:", x * SCALE, y * SCALE, z * SCALE);
+        }
+      } catch (err) {
+        console.error("ISS fetch error:", err);
+      }
+    }
+
+    fetchISS();
+  }, []);
+
+  return (
+    <mesh ref={markerRef}>
+      <sphereGeometry args={[0.05, 16, 16]} />
+      <meshBasicMaterial color="red" />
+    </mesh>
+  );
+}
+
 
 
 /* -------------------- ZOOM HANDLER -------------------- */
@@ -108,7 +145,9 @@ export default function GlobePage() {
         <color attach="background" args={["#02050a"]} />
         <ambientLight intensity={0.15} color="#5ca9ff" />
         <directionalLight position={[3, 2, 5]} intensity={1.2} color="#7fc7ff" />
-        <Earth />
+        <Earth>
+          <ISSMarker />
+        </Earth>
         <StaticStars radius={100} count={4000} />
         <ZoomHandler />
       </Canvas>

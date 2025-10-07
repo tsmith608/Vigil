@@ -1,21 +1,56 @@
-import { propagateSatellite } from "@lib/propagate"; 
+import { propagateFullDay, getSatelliteCartesian } from "@lib/propagate";
 
 export async function GET() {
-  const tle1 = "1 25544U 98067A   20344.91667824  .00001264  00000-0  29621-4 0  9993";
-  const tle2 = "2 25544  51.6451  21.4580 0001471  48.8120  69.3402 15.49362719256626";
+  try {
+    // Fetch ISS TLE from CelesTrak
+    const tleUrl = "https://celestrak.org/NORAD/elements/stations.txt";
+    const response = await fetch(tleUrl);
+    const tleText = await response.text();
 
-  const result = propagateSatellite(tle1, tle2);
+    // Parse lines (first satellite = ISS)
+    const lines = tleText.split("\n").map(l => l.trim()).filter(Boolean);
+    const tle1 = lines[1];
+    const tle2 = lines[2];
 
-  if (!result) {
-    return new Response(JSON.stringify({ error: "Propagation failed" }), {
+    // Propagate single snapshot (current time)
+    const now = new Date();
+    const satrec = require("satellite.js").twoline2satrec(tle1, tle2);
+    const pv = require("satellite.js").propagate(satrec, now);
+    if (!pv.position) {
+      return new Response(JSON.stringify({ error: "Propagation failed" }), {
+        status: 500,
+      });
+    }
+
+    const gmst = require("satellite.js").gstime(now);
+    const gd = require("satellite.js").eciToGeodetic(pv.position, gmst);
+    const latitude = require("satellite.js").radiansToDegrees(gd.latitude);
+    const longitude = require("satellite.js").radiansToDegrees(gd.longitude);
+    const altitude = gd.height;
+
+    // Convert to 3D coordinates
+    const cartesian = getSatelliteCartesian(latitude, longitude, altitude);
+
+    // Return full object
+    return new Response(
+      JSON.stringify({
+        timestamp: now.toISOString(),
+        tle1,
+        tle2,
+        latitude,
+        longitude,
+        altitude,
+        positionEci: pv.position,
+        velocityEci: pv.velocity,
+        cartesian,
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
+
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
+      headers: { "Content-Type": "application/json" },
     });
   }
-
-  return new Response(JSON.stringify(result), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
 }
-
-// /api/iss - Returns the current position of the ISS using hardcoded TLE data
