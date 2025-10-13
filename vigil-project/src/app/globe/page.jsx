@@ -92,10 +92,12 @@ function ISSMarker() {
         // scale to 2-unit Earth
         const SCALE = 1 / 3185; 
         const { x, y, z } = data.cartesian;
+        
 
         if (markerRef.current) {
           markerRef.current.position.set(x * SCALE, y * SCALE, z * SCALE);
           console.log("ISS Cartesian scaled:", x * SCALE, y * SCALE, z * SCALE);
+          console.log("ISS Lat/Lon:", data.latitude, data.longitude);
         }
       } catch (err) {
         console.error("ISS fetch error:", err);
@@ -107,11 +109,53 @@ function ISSMarker() {
 
   return (
     <mesh ref={markerRef}>
-      <sphereGeometry args={[0.05, 16, 16]} />
+      <sphereGeometry args={[0.01, 16, 16]} />
       <meshBasicMaterial color="red" />
     </mesh>
   );
 }
+
+/* -------------------- StarLink HANDLER -------------------- */
+function StarlinkMarkers() {
+  const [positions, setPositions] = useState([]);
+  const groupRef = useRef();
+  const SCALE = 1 / 3185;
+
+  useEffect(() => {
+    async function fetchStarlink() {
+      try {
+        const res = await fetch("/api/starlink");
+        const data = await res.json();
+        // store scaled xyz for each satellite
+        const scaled = data.map((s) => ({
+          x: s.cartesian.x * SCALE,
+          y: s.cartesian.y * SCALE,
+          z: s.cartesian.z * SCALE,
+        }));
+        setPositions(scaled);
+        console.log("Starlink sats loaded:", scaled.length);
+        
+      } catch (err) {
+        console.error("Starlink fetch error:", err);
+      }
+    }
+    fetchStarlink();
+  }, []);
+
+  return (
+    <group ref={groupRef}>
+      {positions.map((p, i) => (
+        <mesh key={i} position={[p.x, p.y, p.z]}>
+          <sphereGeometry args={[0.004, 8, 8]} />
+          <meshBasicMaterial color="#00ffcc" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+
+
 
 
 
@@ -139,14 +183,38 @@ function ZoomHandler() {
 
 /* -------------------- MAIN PAGE -------------------- */
 export default function GlobePage() {
+  const [showISS, setShowISS] = useState(true);
+  const [showStarlink, setShowStarlink] = useState(true);
   return (
     <div className="h-screen w-full relative">
+      {/* --- Control panel --- */}
+      <div className="absolute top-4 left-4 z-10 bg-black/50 text-white px-3 py-2 rounded space-y-1">
+        <label className="block">
+          <input
+            type="checkbox"
+            checked={showISS}
+            onChange={(e) => setShowISS(e.target.checked)}
+            className="mr-2"
+          />
+          Show ISS
+        </label>
+        <label className="block">
+          <input
+            type="checkbox"
+            checked={showStarlink}
+            onChange={(e) => setShowStarlink(e.target.checked)}
+            className="mr-2"
+          />
+          Show Starlink
+        </label>
+      </div>
       <Canvas camera={{ position: [0, 0, 6], fov: 45 }}>
         <color attach="background" args={["#02050a"]} />
         <ambientLight intensity={0.15} color="#5ca9ff" />
         <directionalLight position={[3, 2, 5]} intensity={1.2} color="#7fc7ff" />
         <Earth>
-          <ISSMarker />
+          {showISS && <ISSMarker />}
+        {showStarlink && <StarlinkMarkers />}
         </Earth>
         <StaticStars radius={100} count={4000} />
         <ZoomHandler />
