@@ -156,6 +156,56 @@ function StarlinkMarkers() {
 
 
 
+/* -------------------- TLE HANDLER -------------------- */
+function TLEMarkers({ selectedCountries }) {
+  const [positions, setPositions] = useState([]);
+  const groupRef = useRef();
+  const SCALE = 1 / 3185;
+
+  useEffect(() => {
+    async function fetchActive() {
+      try {
+        const res = await fetch("/api/active");
+        const data = await res.json();
+        const scaled = data
+          .filter((s) => s && s.cartesian && s.cartesian.x !== undefined)
+          .map((s) => ({
+            x: s.cartesian.x * SCALE,
+            y: s.cartesian.y * SCALE,
+            z: s.cartesian.z * SCALE,
+            country: s.country || "UNK",
+          }));
+        setPositions(scaled);
+        console.log("🛰️ Satellites loaded:", scaled.length);
+      } catch (err) {
+        console.error("TLE fetch error:", err);
+      }
+    }
+
+    fetchActive();
+  }, []);
+
+  // ✅ Filtering: only show satellites with matching country codes
+  const visiblePositions =
+    selectedCountries.length === 0
+      ? [] // show none if nothing selected
+      : positions.filter((p) => selectedCountries.includes(p.country));
+
+  return (
+    <group ref={groupRef}>
+      {visiblePositions.map((p, i) => (
+        <mesh key={i} position={[p.x, p.y, p.z]}>
+          <sphereGeometry args={[0.004, 8, 8]} />
+          <meshBasicMaterial color="#008080" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+
+
+
 
 
 
@@ -185,10 +235,36 @@ function ZoomHandler() {
 export default function GlobePage() {
   const [showISS, setShowISS] = useState(true);
   const [showStarlink, setShowStarlink] = useState(true);
+  const [showTLE, setShowTLE] = useState(true);
+  const [filterOptions, setFilterOptions] = useState([]);
+  const [selectedCountries, setSelectedCountries] = useState([]);
+
+  // 🛰️ Fetch unique country codes from /api/active
+  useEffect(() => {
+    async function fetchCountries() {
+      try {
+        const res = await fetch("/api/active");
+        const data = await res.json();
+
+        // collect unique uppercase country codes
+        const uniqueCountries = [
+          ...new Set(data.map((s) => (s.country ? s.country.toUpperCase() : "UNK"))),
+        ].sort();
+
+        setFilterOptions(uniqueCountries);
+      } catch (err) {
+        console.error("Country list fetch error:", err);
+      }
+    }
+
+    fetchCountries();
+  }, []);
+
   return (
     <div className="h-screen w-full relative">
       {/* --- Control panel --- */}
-      <div className="absolute top-4 left-4 z-10 bg-black/50 text-white px-3 py-2 rounded space-y-1">
+      <div className="absolute top-4 left-4 z-10 bg-black/50 text-white px-3 py-2 rounded space-y-2 w-56">
+        {/* Toggle switches */}
         <label className="block">
           <input
             type="checkbox"
@@ -198,6 +274,7 @@ export default function GlobePage() {
           />
           Show ISS
         </label>
+
         <label className="block">
           <input
             type="checkbox"
@@ -207,18 +284,80 @@ export default function GlobePage() {
           />
           Show Starlink
         </label>
+
+        <label className="block">
+          <input
+            type="checkbox"
+            checked={showTLE}
+            onChange={(e) => setShowTLE(e.target.checked)}
+            className="mr-2"
+          />
+          Show Active Satellites
+        </label>
+
+        {/* --- Country Filter Dropdown --- */}
+        {showTLE && (
+          <div className="mt-2">
+            <label className="block text-xs font-semibold text-gray-300 mb-1">
+              Filter by Country
+            </label>
+
+            <select
+              multiple
+              size={6}
+              value={selectedCountries}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSelectedCountries((prev) =>
+                  prev.includes(value)
+                    ? prev.filter((c) => c !== value)
+                    : [...prev, value]
+                );
+              }}
+              className="bg-black/70 border border-gray-600 rounded w-full text-white text-sm p-1"
+            >
+              {filterOptions.map((country) => (
+                <option key={country} value={country}>
+                  {country}
+                </option>
+              ))}
+            </select>
+
+            {/* Buttons */}
+            <div className="flex gap-1 mt-2">
+              <button
+                onClick={() => setSelectedCountries(filterOptions)} // Select all
+                className="flex-1 text-xs bg-gray-700 hover:bg-gray-600 rounded p-1"
+              >
+                Select All
+              </button>
+              <button
+                onClick={() => setSelectedCountries([])} // Clear all
+                className="flex-1 text-xs bg-gray-700 hover:bg-gray-600 rounded p-1"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* --- 3D Scene --- */}
       <Canvas camera={{ position: [0, 0, 6], fov: 45 }}>
         <color attach="background" args={["#02050a"]} />
         <ambientLight intensity={0.15} color="#5ca9ff" />
         <directionalLight position={[3, 2, 5]} intensity={1.2} color="#7fc7ff" />
+
         <Earth>
           {showISS && <ISSMarker />}
-        {showStarlink && <StarlinkMarkers />}
+          {showStarlink && <StarlinkMarkers />}
+          {showTLE && <TLEMarkers selectedCountries={selectedCountries} />}
         </Earth>
+
         <StaticStars radius={100} count={4000} />
         <ZoomHandler />
       </Canvas>
     </div>
   );
 }
+
