@@ -154,6 +154,241 @@ function StarlinkMarkers() {
   );
 }
 
+/* -------------------- Beidou HANDLER -------------------- */
+function BeidouMarkers() {
+  const [positions, setPositions] = useState([]);
+  const groupRef = useRef();
+  const SCALE = 1 / 3185;
+
+  useEffect(() => {
+    async function fetchBeidou() {
+      try {
+        const res = await fetch("/api/beidou");
+        const data = await res.json();
+        // store scaled xyz for each satellite
+        const scaled = data.map((s) => ({
+          x: s.cartesian.x * SCALE,
+          y: s.cartesian.y * SCALE,
+          z: s.cartesian.z * SCALE,
+        }));
+        setPositions(scaled);
+        console.log("Beidou sats loaded:", scaled.length);
+        
+      } catch (err) {
+        console.error("Beidou fetch error:", err);
+      }
+    }
+    fetchBeidou();
+  }, []);
+
+  return (
+    <group ref={groupRef}>
+      {positions.map((p, i) => (
+        <mesh key={i} position={[p.x, p.y, p.z]}>
+          <sphereGeometry args={[0.008, 8, 8]} />
+          <meshBasicMaterial color="#fd07b3ff" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+/* -------------------- GlobalStar HANDLER -------------------- */
+function GlobalStarMarkers() {
+  const [positions, setPositions] = useState([]);
+  const groupRef = useRef();
+  const SCALE = 1 / 3185;
+
+  useEffect(() => {
+    async function fetchGlobalStar() {
+      try {
+        const res = await fetch("/api/globalstar");
+        const data = await res.json();
+        // store scaled xyz for each satellite
+        const scaled = data.map((s) => ({
+          x: s.cartesian.x * SCALE,
+          y: s.cartesian.y * SCALE,
+          z: s.cartesian.z * SCALE,
+        }));
+        setPositions(scaled);
+        console.log("GlobalStar sats loaded:", scaled.length);
+
+      } catch (err) {
+        console.error("GlobalStar fetch error:", err);
+      }
+    }
+    fetchGlobalStar();
+  }, []);
+
+  return (
+    <group ref={groupRef}>
+      {positions.map((p, i) => (
+        <mesh key={i} position={[p.x, p.y, p.z]}>
+          <sphereGeometry args={[0.004, 8, 8]} />
+          <meshBasicMaterial color="#1707ffff" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+
+/* -------------------- Glonass HANDLER -------------------- */
+function GlonassMarkers() {
+  const [positions, setPositions] = useState([]);
+  const groupRef = useRef();
+  const SCALE = 1 / 3185;
+
+  useEffect(() => {
+    async function fetchGlonass() {
+      try {
+        const res = await fetch("/api/glonass");
+        const data = await res.json();
+        // store scaled xyz for each satellite
+        const scaled = data.map((s) => ({
+          x: s.cartesian.x * SCALE,
+          y: s.cartesian.y * SCALE,
+          z: s.cartesian.z * SCALE,
+        }));
+        setPositions(scaled);
+        console.log("Glonass sats loaded:", scaled.length);
+        
+      } catch (err) {
+        console.error("Glonass fetch error:", err);
+      }
+    }
+    fetchGlonass();
+  }, []);
+
+  return (
+    <group ref={groupRef}>
+      {positions.map((p, i) => (
+        <mesh key={i} position={[p.x, p.y, p.z]}>
+          <sphereGeometry args={[0.01, 8, 8]} />
+          <meshBasicMaterial color="#15ff00ff" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+/* -------------------- GPS HANDLER -------------------- */
+function GPSMarkers() {
+  const [positions, setPositions] = useState([]);
+  const groupRef = useRef();
+  const SCALE = 1 / 3185;
+
+  useEffect(() => {
+    async function fetchGPS() {
+      try {
+        const res = await fetch("/api/gps");
+        const data = await res.json();
+        // store scaled xyz for each satellite
+        const scaled = data.map((s) => ({
+          x: s.cartesian.x * SCALE,
+          y: s.cartesian.y * SCALE,
+          z: s.cartesian.z * SCALE,
+        }));
+        setPositions(scaled);
+        console.log("GPS sats loaded:", scaled.length);
+        
+      } catch (err) {
+        console.error("GPS fetch error:", err);
+      }
+    }
+    fetchGPS();
+  }, []);
+
+  return (
+    <group ref={groupRef}>
+      {positions.map((p, i) => (
+        <mesh key={i} position={[p.x, p.y, p.z]}>
+          <sphereGeometry args={[0.01, 8, 8]} />
+          <meshBasicMaterial color="#eb0808ff" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+/* -------------------- Iridium HANDLER -------------------- */
+function IridiumMarkers() {
+  const [positions, setPositions] = useState([]);
+  const groupRef = useRef();
+  const SCALE = 1 / 3185;
+
+  useEffect(() => {
+    async function fetchIridium() {
+      try {
+        const res = await fetch("/api/iridium");
+        const data = await res.json();
+        // store scaled xyz for each satellite
+        const scaled = data.map((s) => ({
+          x: s.cartesian.x * SCALE,
+          y: s.cartesian.y * SCALE,
+          z: s.cartesian.z * SCALE,
+        }));
+        setPositions(scaled);
+        console.log("Iridium sats loaded:", scaled.length);
+        
+      } catch (err) {
+        console.error("Iridium fetch error:", err);
+      }
+    }
+    fetchIridium();
+  }, []);
+
+  return (
+    <group ref={groupRef}>
+      {positions.map((p, i) => (
+        <mesh key={i} position={[p.x, p.y, p.z]}>
+          <sphereGeometry args={[0.004, 8, 8]} />
+          <meshBasicMaterial color="#ffd900ff" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+/* -------------------- OneWeb HANDLER -------------------- */
+function OneWebMarkers() {
+  const [positions, setPositions] = useState([]);
+  const groupRef = useRef();
+  const SCALE = 1 / 3185;
+
+  useEffect(() => {
+    async function fetchOneWeb() {
+      try {
+        const res = await fetch("/api/oneweb");
+        const data = await res.json();
+        // store scaled xyz for each satellite
+        const scaled = data.map((s) => ({
+          x: s.cartesian.x * SCALE,
+          y: s.cartesian.y * SCALE,
+          z: s.cartesian.z * SCALE,
+        }));
+        setPositions(scaled);
+        console.log("OneWeb sats loaded:", scaled.length);
+        
+      } catch (err) {
+        console.error("OneWeb fetch error:", err);
+      }
+    }
+    fetchOneWeb();
+  }, []);
+
+  return (
+    <group ref={groupRef}>
+      {positions.map((p, i) => (
+        <mesh key={i} position={[p.x, p.y, p.z]}>
+          <sphereGeometry args={[0.004, 8, 8]} />
+          <meshBasicMaterial color="#00ffcc" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
 
 
 /* -------------------- TLE HANDLER -------------------- */
@@ -204,11 +439,6 @@ function TLEMarkers({ selectedCountries }) {
 }
 
 
-
-
-
-
-
 /* -------------------- ZOOM HANDLER -------------------- */
 function ZoomHandler() {
   const { camera } = useThree();
@@ -220,7 +450,7 @@ function ZoomHandler() {
     const onWheel = (e) => {
       e.preventDefault();
       let newZoom = camera.position.z + e.deltaY * 0.01;
-      newZoom = Math.min(10, Math.max(3, newZoom));
+      newZoom = Math.min(25, Math.max(3, newZoom));
       camera.position.z = newZoom;
       setZoom(newZoom);
     };
@@ -235,6 +465,12 @@ function ZoomHandler() {
 export default function GlobePage() {
   const [showISS, setShowISS] = useState(true);
   const [showStarlink, setShowStarlink] = useState(true);
+  const [showBeidou, setShowBeidou] = useState(true);
+  const [showGlobalStar, setShowGlobalStar] = useState(true);
+  const [showGlonass, setShowGlonass] = useState(true);
+  const [showGPS, setShowGPS] = useState(true);
+  const [showIridium, setShowIridium] = useState(true);
+  const [showOneWeb, setShowOneWeb] = useState(true);
   const [showTLE, setShowTLE] = useState(true);
   const [filterOptions, setFilterOptions] = useState([]);
   const [selectedCountries, setSelectedCountries] = useState([]);
@@ -284,6 +520,66 @@ export default function GlobePage() {
           />
           Show Starlink
         </label>
+        
+        <label className="block">
+          <input
+            type="checkbox"
+            checked={showBeidou}
+            onChange={(e) => setShowBeidou(e.target.checked)}
+            className="mr-2"
+          />
+          Show Beidou
+        </label>
+
+        <label className="block">
+          <input
+            type="checkbox"
+            checked={showGlobalStar}
+            onChange={(e) => setShowGlobalStar(e.target.checked)}
+            className="mr-2"
+          />
+          Show GlobalStar
+        </label>
+
+        <label className="block">
+          <input
+            type="checkbox"
+            checked={showGlonass}
+            onChange={(e) => setShowGlonass(e.target.checked)}
+            className="mr-2"
+          />
+          Show Glonass
+        </label>
+
+        <label className="block">
+          <input
+            type="checkbox"
+            checked={showGPS}
+            onChange={(e) => setShowGPS(e.target.checked)}
+            className="mr-2"
+          />
+          Show GPS
+        </label>
+
+        <label className="block">
+          <input
+            type="checkbox"
+            checked={showIridium}
+            onChange={(e) => setShowIridium(e.target.checked)}
+            className="mr-2"
+          />
+          Show Iridium
+        </label>
+
+        <label className="block">
+          <input
+            type="checkbox"
+            checked={showOneWeb}
+            onChange={(e) => setShowOneWeb(e.target.checked)}
+            className="mr-2"
+          />
+          Show OneWeb
+        </label>
 
         <label className="block">
           <input
@@ -292,7 +588,7 @@ export default function GlobePage() {
             onChange={(e) => setShowTLE(e.target.checked)}
             className="mr-2"
           />
-          Show Active Satellites
+          Show Other Active Satellites
         </label>
 
         {/* --- Country Filter Dropdown --- */}
@@ -351,10 +647,16 @@ export default function GlobePage() {
         <Earth>
           {showISS && <ISSMarker />}
           {showStarlink && <StarlinkMarkers />}
+          {showBeidou && <BeidouMarkers />}
+          {showGlobalStar && <GlobalStarMarkers />}
+          {showGlonass && <GlonassMarkers />}
+          {showGPS && <GPSMarkers />}
+          {showIridium && <IridiumMarkers />}
+          {showOneWeb && <OneWebMarkers />}
           {showTLE && <TLEMarkers selectedCountries={selectedCountries} />}
         </Earth>
 
-        <StaticStars radius={100} count={4000} />
+        {/* <StaticStars radius={100} count={4000} /> */}
         <ZoomHandler />
       </Canvas>
     </div>
