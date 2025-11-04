@@ -48,9 +48,7 @@
         const line2 = lines[i + 2];
         if (!line1 || !line2) continue;
     
-        // 🧩 Extract possible (XX) code or fallback to constellation name
-        const match = nameLine.match(/\(([^)]+)\)\s*$/);
-        const country = match ? match[1].toUpperCase() : CONSTELLATION_NAME;
+        
     
         const name = nameLine.replace(/\s*\([^)]+\)\s*$/, "").trim();
         tles.push({ name, country, line1, line2 });
