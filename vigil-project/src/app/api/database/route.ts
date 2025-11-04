@@ -9,8 +9,8 @@ import saveRowsPg from '@lib/saveRows';
 import { pool } from '@lib/pg'; // <-- field-based pg Pool with SSL rejectUnauthorized:false
 
 const CONSTELLATIONS = [
-  // 'beidou', 'globalstar', 'glo-ops', 'gps-ops', 'oneweb', 'starlink', 'iridium',
-  'active',
+  'active','beidou', 'globalstar', 'glo-ops', 'gps-ops', 'oneweb', 'starlink', 'iridium',
+  
 ];
 
 const urlFor = (g: string) =>
