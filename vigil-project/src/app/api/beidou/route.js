@@ -51,7 +51,7 @@
         
     
         const name = nameLine.replace(/\s*\([^)]+\)\s*$/, "").trim();
-        tles.push({ name, country, line1, line2 });
+        tles.push({ name, line1, line2 });
         }
     
         console.log(`📡 Parsed ${tles.length} ${CONSTELLATION_NAME} satellites`);
@@ -74,7 +74,6 @@
     
             return {
                 name: sat.name,
-                country: sat.country,
                 latitude,
                 longitude,
                 altitude,
