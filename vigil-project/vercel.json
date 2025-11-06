@@ -1,8 +1,7 @@
 {
-  "crons": [
-    {
-      "path": "/api/database",
+  "functions": {
+    "api/databse/route.ts": {
       "schedule": "0 */8 * * *"
     }
-  ]
+  }
 }
