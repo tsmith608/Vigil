@@ -24,6 +24,6 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "lib/parseTLE.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "lib/parseTLE.js", "src/app/api/beidou/route.js", "src/app/api/beidou/route.js"],
   "exclude": ["node_modules"]
 }

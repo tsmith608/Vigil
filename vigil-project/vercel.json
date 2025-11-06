@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/databse/route.ts": {
+    "api/database.ts": {
       "schedule": "0 */8 * * *"
     }
   }
