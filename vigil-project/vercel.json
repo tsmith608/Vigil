@@ -1,7 +1,9 @@
 {
-  "functions": {
-    "api/database.ts": {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/database",
       "schedule": "0 */8 * * *"
     }
-  }
+  ]
 }
