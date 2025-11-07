@@ -1,4 +1,5 @@
 import { getSatelliteCartesian } from "@lib/propagate";
+import { pool } from "@lib/db";
 import * as satellite from "satellite.js";
 import fs from "fs";
 import path from "path";
@@ -9,43 +10,22 @@ let lastFetch = 0;
 
 export async function GET(request) {
   try {
-    const now = Date.now();
-    const fileExists = fs.existsSync(FILE_PATH);
-    const stale = !fileExists || now - lastFetch > REFRESH_INTERVAL;
+    console.log("📥 Loading STARLINK TLEs from DB...");
 
-    let text;
+        const res = await pool.query(`
+        SELECT name, line1, line2
+        FROM public.tles
+        WHERE constellation = 'starlink'
+        ORDER BY satnum
+        `);
 
-    if (stale) {
-      // Fetch new data from CelesTrak
-      const response = await fetch("https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle");
-      if (!response.ok) throw new Error("CelesTrak fetch failed");
-      text = await response.text();
-      fs.writeFileSync(FILE_PATH, text, "utf8");
-      lastFetch = now;
-      console.log("Starlink TLEs updated from CelesTrak");
-    } else {
-      // Read cached version
-      text = fs.readFileSync(FILE_PATH, "utf8");
-    }
+        const tles = res.rows.map(r => ({
+        name: r.name,
+        line1: r.line1,
+        line2: r.line2,
+        }));
 
-    // Normalize CRLF to LF, split into lines, and remove empty lines
-    const lines = text
-      .replace(/\r\n/g, "\n")
-      .replace(/\r/g, "\n")
-      .split("\n")
-      .map((l) => l.trim())
-      .filter((l) => l.length > 0);
-
-    // Group every 3 lines into a TLE object: { name, line1, line2 }
-    const tles = [];
-    for (let i = 0; i < lines.length; i += 3) {
-      const name = lines[i] ?? null;
-      const line1 = lines[i + 1] ?? null;
-      const line2 = lines[i + 2] ?? null;
-      if (name && line1 && line2) {
-        tles.push({ name, line1, line2 });
-      }
-    }
+        console.log(`📄 Retrieved ${tles.length} STARLINK TLE entries from DB`);
 
     // Propagate each satellite once for current position
     const nowDate = new Date();

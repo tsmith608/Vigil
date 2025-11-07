@@ -1,9 +1,9 @@
 import { getSatelliteCartesian } from "@lib/propagate";
+import { pool } from "@lib/db";
 import * as satellite from "satellite.js";
 import fs from "fs";
 import path from "path";
 
-// 🛰️ Change this line per constellation
 const CONSTELLATION_NAME = "GLOBALSTAR";
 const FEED_URL = `https://celestrak.org/NORAD/elements/gp.php?GROUP=${CONSTELLATION_NAME.toLowerCase()}&FORMAT=tle`;
 
@@ -15,48 +15,22 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // helps on some Windows setups
 
 export async function GET() {
   try {
-    const now = Date.now();
-    const fileExists = fs.existsSync(FILE_PATH);
-    const stale = !fileExists || now - lastFetch > REFRESH_INTERVAL;
+    console.log("📥 Loading GLOBALSTAR TLEs from DB...");
 
-    let tleText;
+        const res = await pool.query(`
+        SELECT name, line1, line2
+        FROM public.tles
+        WHERE constellation = 'globalstar'
+        ORDER BY satnum
+        `);
 
-    if (stale) {
-      console.log(`🔄 Fetching fresh ${CONSTELLATION_NAME} TLEs...`);
-      const res = await fetch(FEED_URL);
-      if (!res.ok) throw new Error(`Failed to fetch ${CONSTELLATION_NAME} feed`);
-      tleText = await res.text();
+        const tles = res.rows.map(r => ({
+        name: r.name,
+        line1: r.line1,
+        line2: r.line2,
+        }));
 
-      fs.mkdirSync(path.dirname(FILE_PATH), { recursive: true });
-      fs.writeFileSync(FILE_PATH, tleText, "utf8");
-      lastFetch = now;
-    } else {
-      console.log(`✅ Using cached ${CONSTELLATION_NAME} TLEs`);
-      tleText = fs.readFileSync(FILE_PATH, "utf8");
-    }
-
-    const lines = tleText
-      .replace(/\r\n/g, "\n")
-      .split("\n")
-      .map((l) => l.trim())
-      .filter(Boolean);
-
-    const tles = [];
-    for (let i = 0; i < lines.length; i += 3) {
-      const nameLine = lines[i];
-      const line1 = lines[i + 1];
-      const line2 = lines[i + 2];
-      if (!line1 || !line2) continue;
-
-      // 🧩 Extract possible (XX) code or fallback to constellation name
-      const match = nameLine.match(/\(([^)]+)\)\s*$/);
-      const country = match ? match[1].toUpperCase() : CONSTELLATION_NAME;
-
-      const name = nameLine.replace(/\s*\([^)]+\)\s*$/, "").trim();
-      tles.push({ name, country, line1, line2 });
-    }
-
-    console.log(`📡 Parsed ${tles.length} ${CONSTELLATION_NAME} satellites`);
+        console.log(`📄 Retrieved ${tles.length} GLOBALSTAR TLE entries from DB`);
 
     const nowDate = new Date();
     const gmst = satellite.gstime(nowDate);

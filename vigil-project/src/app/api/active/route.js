@@ -1,4 +1,5 @@
 import { getSatelliteCartesian } from "@lib/propagate";
+import { pool } from "@lib/db";
 import * as satellite from "satellite.js";
 import fs from "fs";
 import path from "path";
@@ -12,71 +13,23 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 export async function GET() {
   try {
-    const now = Date.now();
-    const fileExists = fs.existsSync(FILE_PATH);
-    const stale = !fileExists || now - lastFetch > REFRESH_INTERVAL;
+    console.log("📥 Loading BEIDOU TLEs from DB...");
 
-    let tleText;
+        const res = await pool.query(`
+        SELECT name, line1, line2
+        FROM public.tles
+        WHERE constellation = 'active'
+        ORDER BY satnum
+        `);
 
-    if (stale) {
-      try {
-        console.log("🌐 Fetching fresh Active TLE text (HTTPS)...");
-        const res = await fetch(
-          "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle",
-          { cache: "no-store" }
-        );
-        if (!res.ok) throw new Error(`CelesTrak HTTPS failed: ${res.status}`);
-        tleText = await res.text();
-      } catch (httpsErr) {
-        console.warn("⚠️ HTTPS fetch failed, retrying via HTTP...");
-        try {
-          const res = await fetch(
-            "http://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle",
-            { cache: "no-store" }
-          );
-          if (!res.ok) throw new Error(`CelesTrak HTTP failed: ${res.status}`);
-          tleText = await res.text();
-        } catch (httpErr) {
-          console.error("❌ Network fetch failed completely.");
-          if (fileExists) {
-            console.log("📂 Using cached TLE file instead.");
-            tleText = fs.readFileSync(FILE_PATH, "utf8");
-          } else {
-            throw new Error("No cached TLE file available — network offline.");
-          }
-        }
-      }
+        const tles = res.rows.map(r => ({
+        name: r.name,
+        line1: r.line1,
+        line2: r.line2,
+        }));
 
-      // Save fresh file
-      fs.mkdirSync(path.dirname(FILE_PATH), { recursive: true });
-      fs.writeFileSync(FILE_PATH, tleText, "utf8");
-      lastFetch = now;
-    } else {
-      console.log("✅ Using cached active satellites file");
-      tleText = fs.readFileSync(FILE_PATH, "utf8");
-    }
+        console.log(`📄 Retrieved ${tles.length} ACTIVE TLE entries from DB`);
 
-    // --- Parse TLEs ---
-    const lines = tleText
-      .replace(/\r\n/g, "\n")
-      .split("\n")
-      .map((l) => l.trim())
-      .filter(Boolean);
-
-    const tles = [];
-    for (let i = 0; i < lines.length; i += 3) {
-      const nameLine = lines[i];
-      const line1 = lines[i + 1];
-      const line2 = lines[i + 2];
-      if (!line1 || !line2) continue;
-
-      const match = nameLine.match(/\(([^)]+)\)\s*$/);
-      const country = match ? match[1] : "UNK";
-      const name = nameLine.replace(/\s*\([^)]+\)\s*$/, "").trim();
-      tles.push({ name, country, line1, line2 });
-    }
-
-    console.log(`📄 Parsed ${tles.length} TLE entries`);
 
     // --- Propagate ---
     const nowDate = new Date();
