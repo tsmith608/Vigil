@@ -13,7 +13,7 @@ export async function GET(request) {
     console.log("📥 Loading STARLINK TLEs from DB...");
 
         const res = await pool.query(`
-        SELECT name, line1, line2
+        SELECT name, satnum, line1, line2
         FROM public.tles
         WHERE constellation = 'starlink'
         ORDER BY satnum
@@ -21,6 +21,7 @@ export async function GET(request) {
 
         const tles = res.rows.map(r => ({
         name: r.name,
+        satnum: r.satnum,
         line1: r.line1,
         line2: r.line2,
         }));
@@ -46,6 +47,7 @@ export async function GET(request) {
 
           return {
             name: sat.name,
+            satnum: sat.satnum,
             latitude,
             longitude,
             altitude,

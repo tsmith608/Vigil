@@ -19,7 +19,7 @@
         console.log("📥 Loading BEIDOU TLEs from DB...");
 
         const res = await pool.query(`
-        SELECT name, line1, line2
+        SELECT name, satnum, line1, line2
         FROM public.tles
         WHERE constellation = 'beidou'
         ORDER BY satnum
@@ -27,6 +27,7 @@
 
         const tles = res.rows.map(r => ({
         name: r.name,
+        satnum: r.satnum,
         line1: r.line1,
         line2: r.line2,
         }));
@@ -52,6 +53,7 @@
     
             return {
                 name: sat.name,
+                satnum: sat.satnum,
                 latitude,
                 longitude,
                 altitude,

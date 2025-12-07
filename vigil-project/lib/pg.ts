@@ -6,7 +6,7 @@ export const pool = new Pool({
   port: 6543,
   database: 'postgres',
   user: 'postgres.cdwjkcvnpezahgxmgylr',  // ← NOT "postgres"
-  password: 'VigilWatchCloud2', // the DB password from Supabase
+  password: 'TJQRFyqyZVPBebxJ', // the DB password from Supabase
   ssl: { rejectUnauthorized: false },
   max: 10,
 });

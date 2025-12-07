@@ -16,7 +16,7 @@ export async function GET() {
     console.log("📥 Loading BEIDOU TLEs from DB...");
 
         const res = await pool.query(`
-        SELECT name, line1, line2
+        SELECT name, satnum, line1, line2
         FROM public.tles
         WHERE constellation = 'active'
         ORDER BY satnum
@@ -24,6 +24,7 @@ export async function GET() {
 
         const tles = res.rows.map(r => ({
         name: r.name,
+        satnum: r.satnum,
         line1: r.line1,
         line2: r.line2,
         }));
@@ -48,7 +49,7 @@ export async function GET() {
           const altitude = gd.height;
           const cartesian = getSatelliteCartesian(latitude, longitude, altitude);
 
-          return { name: sat.name, country: sat.country, latitude, longitude, altitude, cartesian };
+          return { name: sat.name, satnum: sat.satnum, latitude, longitude, altitude, cartesian };
         } catch {
           return null;
         }

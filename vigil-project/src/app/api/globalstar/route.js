@@ -18,7 +18,7 @@ export async function GET() {
     console.log("📥 Loading GLOBALSTAR TLEs from DB...");
 
         const res = await pool.query(`
-        SELECT name, line1, line2
+        SELECT name, satnum, line1, line2
         FROM public.tles
         WHERE constellation = 'globalstar'
         ORDER BY satnum
@@ -26,6 +26,7 @@ export async function GET() {
 
         const tles = res.rows.map(r => ({
         name: r.name,
+        satnum: r.satnum,
         line1: r.line1,
         line2: r.line2,
         }));
@@ -50,7 +51,7 @@ export async function GET() {
 
           return {
             name: sat.name,
-            country: sat.country,
+            satnum: sat.satnum,
             latitude,
             longitude,
             altitude,

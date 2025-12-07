@@ -12,18 +12,19 @@ function Earth({children}) {
   const prev = useRef({ x: 0, y: 0 });
   const sensitivity = 0.0025;
   const friction = 0.95;
-  const issMarkerRef = useRef();
-
 
   useFrame(() => {
-    earthRef.current.rotation.y += velocity.current.x;
-    earthRef.current.rotation.x += velocity.current.y;
-    velocity.current.x *= friction;
-    velocity.current.y *= friction;
-    earthRef.current.rotation.x = Math.max(
-      -Math.PI / 2,
-      Math.min(Math.PI / 2, earthRef.current.rotation.x)
-    );
+    if (earthRef.current) {
+      earthRef.current.rotation.y += velocity.current.x;
+      earthRef.current.rotation.x += velocity.current.y;
+      velocity.current.x *= friction;
+      velocity.current.y *= friction;
+
+      earthRef.current.rotation.x = Math.max(
+        -Math.PI / 2,
+        Math.min(Math.PI / 2, earthRef.current.rotation.x)
+      );
+    }
   });
 
   const handlePointerDown = (e) => {
@@ -38,6 +39,7 @@ function Earth({children}) {
     const dy = e.clientY - prev.current.y;
     prev.current.x = e.clientX;
     prev.current.y = e.clientY;
+
     velocity.current.x = dx * sensitivity;
     velocity.current.y = dy * sensitivity;
   };
@@ -56,31 +58,9 @@ function Earth({children}) {
     </mesh>
   );
 }
-function StaticStars({ count = 4000, radius = 100 }) {
-  const positions = useRef(new Float32Array(count * 3));
-  for (let i = 0; i < count * 3; i++) {
-    positions.current[i] = (Math.random() - 0.5) * radius * 2;
-  }
-  return (
-    <points>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={count}
-          array={positions.current}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <pointsMaterial
-        color="#ffffff"
-        size={0.02}
-        sizeAttenuation={true}
-      />
-    </points>
-  );
-}
+
 /* -------------------- ISS HANDLER -------------------- */
-function ISSMarker() {
+function ISSMarker({ setSelectedSatellite }) {   // NEW ARG
   const markerRef = useRef();
 
   useEffect(() => {
@@ -89,15 +69,11 @@ function ISSMarker() {
         const res = await fetch("/api/iss");
         const data = await res.json();
 
-        // scale to 2-unit Earth
-        const SCALE = 1 / 3185; 
+        const SCALE = 1 / 3185;
         const { x, y, z } = data.cartesian;
-        
 
         if (markerRef.current) {
           markerRef.current.position.set(x * SCALE, y * SCALE, z * SCALE);
-          console.log("ISS Cartesian scaled:", x * SCALE, y * SCALE, z * SCALE);
-          console.log("ISS Lat/Lon:", data.latitude, data.longitude);
         }
       } catch (err) {
         console.error("ISS fetch error:", err);
@@ -108,7 +84,13 @@ function ISSMarker() {
   }, []);
 
   return (
-    <mesh ref={markerRef}>
+    <mesh
+      ref={markerRef}
+      onClick={(e) => {
+        e.stopPropagation();
+        setSelectedSatellite({ name: "ISS", ...markerRef.current.position });
+      }}
+    >
       <sphereGeometry args={[0.01, 16, 16]} />
       <meshBasicMaterial color="red" />
     </mesh>
@@ -116,9 +98,9 @@ function ISSMarker() {
 }
 
 /* -------------------- StarLink HANDLER -------------------- */
-function StarlinkMarkers() {
+function StarlinkMarkers({ setSelectedSatellite }) {   // NEW ARG
   const [positions, setPositions] = useState([]);
-  const groupRef = useRef();
+  const [raw, setRaw] = useState([]); // NEW: store original sat objects
   const SCALE = 1 / 3185;
 
   useEffect(() => {
@@ -126,15 +108,15 @@ function StarlinkMarkers() {
       try {
         const res = await fetch("/api/starlink");
         const data = await res.json();
-        // store scaled xyz for each satellite
+
+        setRaw(data); // NEW
+
         const scaled = data.map((s) => ({
           x: s.cartesian.x * SCALE,
           y: s.cartesian.y * SCALE,
           z: s.cartesian.z * SCALE,
         }));
         setPositions(scaled);
-        console.log("Starlink sats loaded:", scaled.length);
-        
       } catch (err) {
         console.error("Starlink fetch error:", err);
       }
@@ -143,9 +125,25 @@ function StarlinkMarkers() {
   }, []);
 
   return (
-    <group ref={groupRef}>
+    <group>
       {positions.map((p, i) => (
-        <mesh key={i} position={[p.x, p.y, p.z]}>
+        <mesh
+          key={i}
+          position={[p.x, p.y, p.z]}
+          onClick={async (e) => {
+          e.stopPropagation();
+
+          const sat = raw[i];  // includes propagated latitude/longitude/altitude
+          const info = await fetch(`/api/satinfo?satnum=${sat.satnum}`).then(r => r.json());
+
+          setSelectedSatellite({
+            ...info,          // DB metadata
+            latitude: sat.latitude,
+            longitude: sat.longitude,
+            altitude: sat.altitude
+          });
+        }}
+        >
           <sphereGeometry args={[0.004, 8, 8]} />
           <meshBasicMaterial color="#00ffcc" />
         </mesh>
@@ -153,11 +151,10 @@ function StarlinkMarkers() {
     </group>
   );
 }
-
 /* -------------------- Beidou HANDLER -------------------- */
-function BeidouMarkers() {
+function BeidouMarkers({ setSelectedSatellite }) {   // NEW ARG
   const [positions, setPositions] = useState([]);
-  const groupRef = useRef();
+  const [raw, setRaw] = useState([]); // NEW
   const SCALE = 1 / 3185;
 
   useEffect(() => {
@@ -165,15 +162,15 @@ function BeidouMarkers() {
       try {
         const res = await fetch("/api/beidou");
         const data = await res.json();
-        // store scaled xyz for each satellite
+
+        setRaw(data); // NEW
+
         const scaled = data.map((s) => ({
           x: s.cartesian.x * SCALE,
           y: s.cartesian.y * SCALE,
           z: s.cartesian.z * SCALE,
         }));
         setPositions(scaled);
-        console.log("Beidou sats loaded:", scaled.length);
-        
       } catch (err) {
         console.error("Beidou fetch error:", err);
       }
@@ -182,9 +179,27 @@ function BeidouMarkers() {
   }, []);
 
   return (
-    <group ref={groupRef}>
+    <group>
       {positions.map((p, i) => (
-        <mesh key={i} position={[p.x, p.y, p.z]}>
+        <mesh
+          key={i}
+          position={[p.x, p.y, p.z]}
+          onClick={async (e) => {
+          e.stopPropagation();
+
+          const sat = raw[i];  // includes propagated latitude/longitude/altitude
+          const info = await fetch(`/api/satinfo?satnum=${sat.satnum}`).then(r => r.json());
+
+          setSelectedSatellite({
+            ...info,          // DB metadata
+            latitude: sat.latitude,
+            longitude: sat.longitude,
+            altitude: sat.altitude
+          });
+        }}
+
+
+        >
           <sphereGeometry args={[0.008, 8, 8]} />
           <meshBasicMaterial color="#fd07b3ff" />
         </mesh>
@@ -194,9 +209,9 @@ function BeidouMarkers() {
 }
 
 /* -------------------- GlobalStar HANDLER -------------------- */
-function GlobalStarMarkers() {
+function GlobalStarMarkers({ setSelectedSatellite }) {  // NEW ARG
   const [positions, setPositions] = useState([]);
-  const groupRef = useRef();
+  const [raw, setRaw] = useState([]); // NEW
   const SCALE = 1 / 3185;
 
   useEffect(() => {
@@ -204,15 +219,15 @@ function GlobalStarMarkers() {
       try {
         const res = await fetch("/api/globalstar");
         const data = await res.json();
-        // store scaled xyz for each satellite
+
+        setRaw(data); // NEW
+
         const scaled = data.map((s) => ({
           x: s.cartesian.x * SCALE,
           y: s.cartesian.y * SCALE,
           z: s.cartesian.z * SCALE,
         }));
         setPositions(scaled);
-        console.log("GlobalStar sats loaded:", scaled.length);
-
       } catch (err) {
         console.error("GlobalStar fetch error:", err);
       }
@@ -221,9 +236,25 @@ function GlobalStarMarkers() {
   }, []);
 
   return (
-    <group ref={groupRef}>
+    <group>
       {positions.map((p, i) => (
-        <mesh key={i} position={[p.x, p.y, p.z]}>
+        <mesh
+          key={i}
+          position={[p.x, p.y, p.z]}
+          onClick={async (e) => {
+          e.stopPropagation();
+
+          const sat = raw[i];  // includes propagated latitude/longitude/altitude
+          const info = await fetch(`/api/satinfo?satnum=${sat.satnum}`).then(r => r.json());
+
+          setSelectedSatellite({
+            ...info,          // DB metadata
+            latitude: sat.latitude,
+            longitude: sat.longitude,
+            altitude: sat.altitude
+          });
+        }}
+        >
           <sphereGeometry args={[0.004, 8, 8]} />
           <meshBasicMaterial color="#1707ffff" />
         </mesh>
@@ -232,11 +263,10 @@ function GlobalStarMarkers() {
   );
 }
 
-
 /* -------------------- Glonass HANDLER -------------------- */
-function GlonassMarkers() {
+function GlonassMarkers({ setSelectedSatellite }) {   // NEW ARG
   const [positions, setPositions] = useState([]);
-  const groupRef = useRef();
+  const [raw, setRaw] = useState([]); // NEW
   const SCALE = 1 / 3185;
 
   useEffect(() => {
@@ -244,15 +274,15 @@ function GlonassMarkers() {
       try {
         const res = await fetch("/api/glonass");
         const data = await res.json();
-        // store scaled xyz for each satellite
+
+        setRaw(data); // NEW
+
         const scaled = data.map((s) => ({
           x: s.cartesian.x * SCALE,
           y: s.cartesian.y * SCALE,
           z: s.cartesian.z * SCALE,
         }));
         setPositions(scaled);
-        console.log("Glonass sats loaded:", scaled.length);
-        
       } catch (err) {
         console.error("Glonass fetch error:", err);
       }
@@ -261,9 +291,27 @@ function GlonassMarkers() {
   }, []);
 
   return (
-    <group ref={groupRef}>
+    <group>
       {positions.map((p, i) => (
-        <mesh key={i} position={[p.x, p.y, p.z]}>
+        <mesh
+          key={i}
+          position={[p.x, p.y, p.z]}
+          onClick={async (e) => {
+          e.stopPropagation();
+
+          const sat = raw[i];  // includes propagated latitude/longitude/altitude
+          const info = await fetch(`/api/satinfo?satnum=${sat.satnum}`).then(r => r.json());
+
+          setSelectedSatellite({
+            ...info,          // DB metadata
+            latitude: sat.latitude,
+            longitude: sat.longitude,
+            altitude: sat.altitude
+          });
+        }}
+
+
+        >
           <sphereGeometry args={[0.01, 8, 8]} />
           <meshBasicMaterial color="#15ff00ff" />
         </mesh>
@@ -273,9 +321,9 @@ function GlonassMarkers() {
 }
 
 /* -------------------- GPS HANDLER -------------------- */
-function GPSMarkers() {
+function GPSMarkers({ setSelectedSatellite }) {   // NEW ARG
   const [positions, setPositions] = useState([]);
-  const groupRef = useRef();
+  const [raw, setRaw] = useState([]); // NEW
   const SCALE = 1 / 3185;
 
   useEffect(() => {
@@ -283,15 +331,15 @@ function GPSMarkers() {
       try {
         const res = await fetch("/api/gps");
         const data = await res.json();
-        // store scaled xyz for each satellite
+
+        setRaw(data); // NEW
+
         const scaled = data.map((s) => ({
           x: s.cartesian.x * SCALE,
           y: s.cartesian.y * SCALE,
           z: s.cartesian.z * SCALE,
         }));
         setPositions(scaled);
-        console.log("GPS sats loaded:", scaled.length);
-        
       } catch (err) {
         console.error("GPS fetch error:", err);
       }
@@ -300,9 +348,27 @@ function GPSMarkers() {
   }, []);
 
   return (
-    <group ref={groupRef}>
+    <group>
       {positions.map((p, i) => (
-        <mesh key={i} position={[p.x, p.y, p.z]}>
+        <mesh
+          key={i}
+          position={[p.x, p.y, p.z]}
+          onClick={async (e) => {
+          e.stopPropagation();
+
+          const sat = raw[i];  // includes propagated latitude/longitude/altitude
+          const info = await fetch(`/api/satinfo?satnum=${sat.satnum}`).then(r => r.json());
+
+          setSelectedSatellite({
+            ...info,          // DB metadata
+            latitude: sat.latitude,
+            longitude: sat.longitude,
+            altitude: sat.altitude
+          });
+        }}
+
+
+        >
           <sphereGeometry args={[0.01, 8, 8]} />
           <meshBasicMaterial color="#eb0808ff" />
         </mesh>
@@ -312,9 +378,9 @@ function GPSMarkers() {
 }
 
 /* -------------------- Iridium HANDLER -------------------- */
-function IridiumMarkers() {
+function IridiumMarkers({ setSelectedSatellite }) {   // NEW ARG
   const [positions, setPositions] = useState([]);
-  const groupRef = useRef();
+  const [raw, setRaw] = useState([]); // NEW
   const SCALE = 1 / 3185;
 
   useEffect(() => {
@@ -322,15 +388,15 @@ function IridiumMarkers() {
       try {
         const res = await fetch("/api/iridium");
         const data = await res.json();
-        // store scaled xyz for each satellite
+
+        setRaw(data); // NEW
+
         const scaled = data.map((s) => ({
           x: s.cartesian.x * SCALE,
           y: s.cartesian.y * SCALE,
           z: s.cartesian.z * SCALE,
         }));
         setPositions(scaled);
-        console.log("Iridium sats loaded:", scaled.length);
-        
       } catch (err) {
         console.error("Iridium fetch error:", err);
       }
@@ -339,9 +405,34 @@ function IridiumMarkers() {
   }, []);
 
   return (
-    <group ref={groupRef}>
+    <group>
       {positions.map((p, i) => (
-        <mesh key={i} position={[p.x, p.y, p.z]}>
+        <mesh
+          key={i}
+          position={[p.x, p.y, p.z]}
+          onClick={async (e) => {
+          e.stopPropagation();
+
+          const sat = raw[i];  // includes propagated latitude/longitude/altitude
+          const info = await fetch(`/api/satinfo?satnum=${sat.satnum}`).then(r => r.json());
+
+          setSelectedSatellite({
+            ...info,          // DB metadata
+            latitude: sat.latitude,
+            longitude: sat.longitude,
+            altitude: sat.altitude
+          });
+
+  setSelectedSatellite({
+    ...info,          // DB metadata
+    latitude: sat.latitude,
+    longitude: sat.longitude,
+    altitude: sat.altitude
+  });
+}}
+
+
+        >
           <sphereGeometry args={[0.004, 8, 8]} />
           <meshBasicMaterial color="#ffd900ff" />
         </mesh>
@@ -351,9 +442,9 @@ function IridiumMarkers() {
 }
 
 /* -------------------- OneWeb HANDLER -------------------- */
-function OneWebMarkers() {
+function OneWebMarkers({ setSelectedSatellite }) {   // NEW ARG
   const [positions, setPositions] = useState([]);
-  const groupRef = useRef();
+  const [raw, setRaw] = useState([]); // NEW
   const SCALE = 1 / 3185;
 
   useEffect(() => {
@@ -361,15 +452,15 @@ function OneWebMarkers() {
       try {
         const res = await fetch("/api/oneweb");
         const data = await res.json();
-        // store scaled xyz for each satellite
+
+        setRaw(data); // NEW
+
         const scaled = data.map((s) => ({
           x: s.cartesian.x * SCALE,
           y: s.cartesian.y * SCALE,
           z: s.cartesian.z * SCALE,
         }));
         setPositions(scaled);
-        console.log("OneWeb sats loaded:", scaled.length);
-        
       } catch (err) {
         console.error("OneWeb fetch error:", err);
       }
@@ -378,9 +469,27 @@ function OneWebMarkers() {
   }, []);
 
   return (
-    <group ref={groupRef}>
+    <group>
       {positions.map((p, i) => (
-        <mesh key={i} position={[p.x, p.y, p.z]}>
+        <mesh
+          key={i}
+          position={[p.x, p.y, p.z]}
+          onClick={async (e) => {
+          e.stopPropagation();
+
+          const sat = raw[i];  // includes propagated latitude/longitude/altitude
+          const info = await fetch(`/api/satinfo?satnum=${sat.satnum}`).then(r => r.json());
+
+          setSelectedSatellite({
+            ...info,          // DB metadata
+            latitude: sat.latitude,
+            longitude: sat.longitude,
+            altitude: sat.altitude
+          });
+        }}
+
+
+        >
           <sphereGeometry args={[0.004, 8, 8]} />
           <meshBasicMaterial color="#00ffcc" />
         </mesh>
@@ -388,13 +497,10 @@ function OneWebMarkers() {
     </group>
   );
 }
-
-
-
-/* -------------------- TLE HANDLER -------------------- */
-function TLEMarkers({ selectedCountries }) {
+/* -------------------- Active HANDLER -------------------- */
+function TLEMarkers({ selectedCountries, setSelectedSatellite }) {   // NEW ARG
   const [positions, setPositions] = useState([]);
-  const groupRef = useRef();
+  const [raw, setRaw] = useState([]); // NEW
   const SCALE = 1 / 3185;
 
   useEffect(() => {
@@ -402,28 +508,53 @@ function TLEMarkers({ selectedCountries }) {
       try {
         const res = await fetch("/api/active");
         const data = await res.json();
-        const scaled = data
-          .filter((s) => s && s.cartesian && s.cartesian.x !== undefined)
-          .map((s) => ({
-            x: s.cartesian.x * SCALE,
-            y: s.cartesian.y * SCALE,
-            z: s.cartesian.z * SCALE,
-          }));
+
+        setRaw(data); // NEW
+
+        const filtered = data.filter(
+          (s) =>
+            s &&
+            s.cartesian &&
+            s.cartesian.x !== undefined &&
+            (selectedCountries.length === 0 ||
+              selectedCountries.includes(s.country?.toUpperCase()))
+        );
+
+        const scaled = filtered.map((s) => ({
+          x: s.cartesian.x * SCALE,
+          y: s.cartesian.y * SCALE,
+          z: s.cartesian.z * SCALE,
+        }));
+
         setPositions(scaled);
-        console.log("🛰️ Satellites loaded:", scaled.length);
       } catch (err) {
         console.error("TLE fetch error:", err);
       }
     }
 
     fetchActive();
-  }, []);
-
+  }, [selectedCountries]);
 
   return (
-    <group ref={groupRef}>
+    <group>
       {positions.map((p, i) => (
-        <mesh key={i} position={[p.x, p.y, p.z]}>
+        <mesh
+          key={i}
+          position={[p.x, p.y, p.z]}
+          onClick={async (e) => {
+          e.stopPropagation();
+
+          const sat = raw[i];  // includes propagated latitude/longitude/altitude
+          const info = await fetch(`/api/satinfo?satnum=${sat.satnum}`).then(r => r.json());
+
+          setSelectedSatellite({
+            ...info,          // DB metadata
+            latitude: sat.latitude,
+            longitude: sat.longitude,
+            altitude: sat.altitude
+          });
+        }}
+        >
           <sphereGeometry args={[0.004, 8, 8]} />
           <meshBasicMaterial color="#008080" />
         </mesh>
@@ -431,7 +562,6 @@ function TLEMarkers({ selectedCountries }) {
     </group>
   );
 }
-
 
 /* -------------------- ZOOM HANDLER -------------------- */
 function ZoomHandler() {
@@ -466,8 +596,11 @@ export default function GlobePage() {
   const [showIridium, setShowIridium] = useState(true);
   const [showOneWeb, setShowOneWeb] = useState(true);
   const [showTLE, setShowTLE] = useState(true);
+
   const [filterOptions, setFilterOptions] = useState([]);
   const [selectedCountries, setSelectedCountries] = useState([]);
+
+  const [selectedSatellite, setSelectedSatellite] = useState(null);  // NEW
 
   // 🛰️ Fetch unique country codes from /api/active
   useEffect(() => {
@@ -476,7 +609,6 @@ export default function GlobePage() {
         const res = await fetch("/api/active");
         const data = await res.json();
 
-        // collect unique uppercase country codes
         const uniqueCountries = [
           ...new Set(data.map((s) => (s.country ? s.country.toUpperCase() : "UNK"))),
         ].sort();
@@ -492,123 +624,87 @@ export default function GlobePage() {
 
   return (
     <div className="h-screen w-full relative">
-      {/* --- Control panel --- */}
+
+      {/* === Floating Info Card === */}
+      {selectedSatellite && (
+        <div className="
+          fixed bottom-6 left-1/2 -translate-x-1/2
+          bg-black/80 text-white p-4 rounded-lg shadow-xl
+          w-[350px] backdrop-blur-md z-50 animate-slide-up
+        ">
+          <div className="flex justify-between mb-2">
+            <h2 className="text-lg font-bold">{selectedSatellite.name}</h2>
+            <button onClick={() => setSelectedSatellite(null)}>✖</button>
+          </div>
+
+          <p><b>Year:</b> {selectedSatellite.intldes_year}</p>
+          <p><b>Latitude:</b> {selectedSatellite.latitude?.toFixed(4)}°</p>
+          <p><b>Longitude:</b> {selectedSatellite.longitude?.toFixed(4)}°</p>
+          <p><b>Altitude:</b> {selectedSatellite.altitude?.toFixed(2)} km</p>
+
+          <p><b>Inclination:</b> {selectedSatellite.inclination_deg?.toFixed(2)}°</p>
+          <p><b>Eccentricity:</b> {selectedSatellite.eccentricity}</p>
+          <p><b>RAAN:</b> {selectedSatellite.raan_deg?.toFixed(2)}°</p>
+          
+
+              
+        </div>
+      )}
+
+      {/* --- Control panel  --- */}
       <div className="absolute top-4 left-4 z-10 bg-black/50 text-white px-3 py-2 rounded space-y-2 w-56">
-        {/* Toggle switches */}
         <label className="block">
-          <input
-            type="checkbox"
-            checked={showISS}
-            onChange={(e) => setShowISS(e.target.checked)}
-            className="mr-2"
-          />
-          Show ISS
+          <input type="checkbox" checked={showISS} onChange={(e) => setShowISS(e.target.checked)} /> Show ISS
         </label>
-
         <label className="block">
-          <input
-            type="checkbox"
-            checked={showStarlink}
-            onChange={(e) => setShowStarlink(e.target.checked)}
-            className="mr-2"
-          />
-          Show Starlink
+          <input type="checkbox" checked={showStarlink} onChange={(e) => setShowStarlink(e.target.checked)} /> Show Starlink
         </label>
-        
         <label className="block">
-          <input
-            type="checkbox"
-            checked={showBeidou}
-            onChange={(e) => setShowBeidou(e.target.checked)}
-            className="mr-2"
-          />
-          Show Beidou
+          <input type="checkbox" checked={showBeidou} onChange={(e) => setShowBeidou(e.target.checked)} /> Show Beidou
         </label>
-
         <label className="block">
-          <input
-            type="checkbox"
-            checked={showGlobalStar}
-            onChange={(e) => setShowGlobalStar(e.target.checked)}
-            className="mr-2"
-          />
-          Show GlobalStar
+          <input type="checkbox" checked={showGlobalStar} onChange={(e) => setShowGlobalStar(e.target.checked)} /> Show GlobalStar
         </label>
-
         <label className="block">
-          <input
-            type="checkbox"
-            checked={showGlonass}
-            onChange={(e) => setShowGlonass(e.target.checked)}
-            className="mr-2"
-          />
-          Show Glonass
+          <input type="checkbox" checked={showGlonass} onChange={(e) => setShowGlonass(e.target.checked)} /> Show Glonass
         </label>
-
         <label className="block">
-          <input
-            type="checkbox"
-            checked={showGPS}
-            onChange={(e) => setShowGPS(e.target.checked)}
-            className="mr-2"
-          />
-          Show GPS
+          <input type="checkbox" checked={showGPS} onChange={(e) => setShowGPS(e.target.checked)} /> Show GPS
         </label>
-
         <label className="block">
-          <input
-            type="checkbox"
-            checked={showIridium}
-            onChange={(e) => setShowIridium(e.target.checked)}
-            className="mr-2"
-          />
-          Show Iridium
+          <input type="checkbox" checked={showIridium} onChange={(e) => setShowIridium(e.target.checked)} /> Show Iridium
         </label>
-
         <label className="block">
-          <input
-            type="checkbox"
-            checked={showOneWeb}
-            onChange={(e) => setShowOneWeb(e.target.checked)}
-            className="mr-2"
-          />
-          Show OneWeb
+          <input type="checkbox" checked={showOneWeb} onChange={(e) => setShowOneWeb(e.target.checked)} /> Show OneWeb
         </label>
-
         <label className="block">
-          <input
-            type="checkbox"
-            checked={showTLE}
-            onChange={(e) => setShowTLE(e.target.checked)}
-            className="mr-2"
-          />
-          Show Other Active Satellites
+          <input type="checkbox" checked={showTLE} onChange={(e) => setShowTLE(e.target.checked)} /> Show Other Active
         </label>
-
       </div>
 
       {/* --- 3D Scene --- */}
-      <Canvas camera={{ position: [0, 0, 6], fov: 45 }}>
+      <Canvas
+        camera={{ position: [0, 0, 6], fov: 45 }}
+        onPointerMissed={() => setSelectedSatellite(null)}   // NEW
+      >
         <color attach="background" args={["#02050a"]} />
         <ambientLight intensity={0.15} color="#5ca9ff" />
         <directionalLight position={[3, 2, 5]} intensity={1.2} color="#7fc7ff" />
 
         <Earth>
-          {showISS && <ISSMarker />}
-          {showStarlink && <StarlinkMarkers />}
-          {showBeidou && <BeidouMarkers />}
-          {showGlobalStar && <GlobalStarMarkers />}
-          {showGlonass && <GlonassMarkers />}
-          {showGPS && <GPSMarkers />}
-          {showIridium && <IridiumMarkers />}
-          {showOneWeb && <OneWebMarkers />}
-          {showTLE && <TLEMarkers/>}
+          {showISS && <ISSMarker setSelectedSatellite={setSelectedSatellite} />}
+          {showStarlink && <StarlinkMarkers setSelectedSatellite={setSelectedSatellite} />}
+          {showBeidou && <BeidouMarkers setSelectedSatellite={setSelectedSatellite} />}
+          {showGlobalStar && <GlobalStarMarkers setSelectedSatellite={setSelectedSatellite} />}
+          {showGlonass && <GlonassMarkers setSelectedSatellite={setSelectedSatellite} />}
+          {showGPS && <GPSMarkers setSelectedSatellite={setSelectedSatellite} />}
+          {showIridium && <IridiumMarkers setSelectedSatellite={setSelectedSatellite} />}
+          {showOneWeb && <OneWebMarkers setSelectedSatellite={setSelectedSatellite} />}
+          {showTLE && <TLEMarkers selectedCountries={selectedCountries} setSelectedSatellite={setSelectedSatellite} />}
         </Earth>
 
-        {/* <StaticStars radius={100} count={4000} /> */}
         <ZoomHandler />
       </Canvas>
     </div>
   );
 }
-
