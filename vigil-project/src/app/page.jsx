@@ -2,6 +2,10 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Stars, useTexture } from "@react-three/drei";
 import { useRef, useState, useEffect } from "react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+
+
 
 /* -------------------- EARTH COMPONENT -------------------- */
 function Earth({children}) {
@@ -60,7 +64,7 @@ function Earth({children}) {
 }
 
 /* -------------------- ISS HANDLER -------------------- */
-function ISSMarker({ setSelectedSatellite }) {   // NEW ARG
+function ISSMarker({ setSelectedSatellite }) {    
   const markerRef = useRef();
 
   useEffect(() => {
@@ -98,9 +102,9 @@ function ISSMarker({ setSelectedSatellite }) {   // NEW ARG
 }
 
 /* -------------------- StarLink HANDLER -------------------- */
-function StarlinkMarkers({ setSelectedSatellite }) {   // NEW ARG
+function StarlinkMarkers({ setSelectedSatellite }) {  
   const [positions, setPositions] = useState([]);
-  const [raw, setRaw] = useState([]); // NEW: store original sat objects
+  const [raw, setRaw] = useState([]); 
   const SCALE = 1 / 3185;
 
   useEffect(() => {
@@ -109,7 +113,7 @@ function StarlinkMarkers({ setSelectedSatellite }) {   // NEW ARG
         const res = await fetch("/api/starlink");
         const data = await res.json();
 
-        setRaw(data); // NEW
+        setRaw(data);
 
         const scaled = data.map((s) => ({
           x: s.cartesian.x * SCALE,
@@ -152,9 +156,9 @@ function StarlinkMarkers({ setSelectedSatellite }) {   // NEW ARG
   );
 }
 /* -------------------- Beidou HANDLER -------------------- */
-function BeidouMarkers({ setSelectedSatellite }) {   // NEW ARG
+function BeidouMarkers({ setSelectedSatellite }) {   
   const [positions, setPositions] = useState([]);
-  const [raw, setRaw] = useState([]); // NEW
+  const [raw, setRaw] = useState([]); 
   const SCALE = 1 / 3185;
 
   useEffect(() => {
@@ -163,7 +167,7 @@ function BeidouMarkers({ setSelectedSatellite }) {   // NEW ARG
         const res = await fetch("/api/beidou");
         const data = await res.json();
 
-        setRaw(data); // NEW
+        setRaw(data); 
 
         const scaled = data.map((s) => ({
           x: s.cartesian.x * SCALE,
@@ -209,9 +213,9 @@ function BeidouMarkers({ setSelectedSatellite }) {   // NEW ARG
 }
 
 /* -------------------- GlobalStar HANDLER -------------------- */
-function GlobalStarMarkers({ setSelectedSatellite }) {  // NEW ARG
+function GlobalStarMarkers({ setSelectedSatellite }) {   
   const [positions, setPositions] = useState([]);
-  const [raw, setRaw] = useState([]); // NEW
+  const [raw, setRaw] = useState([]);  
   const SCALE = 1 / 3185;
 
   useEffect(() => {
@@ -220,7 +224,7 @@ function GlobalStarMarkers({ setSelectedSatellite }) {  // NEW ARG
         const res = await fetch("/api/globalstar");
         const data = await res.json();
 
-        setRaw(data); // NEW
+        setRaw(data);  
 
         const scaled = data.map((s) => ({
           x: s.cartesian.x * SCALE,
@@ -264,9 +268,9 @@ function GlobalStarMarkers({ setSelectedSatellite }) {  // NEW ARG
 }
 
 /* -------------------- Glonass HANDLER -------------------- */
-function GlonassMarkers({ setSelectedSatellite }) {   // NEW ARG
+function GlonassMarkers({ setSelectedSatellite }) {    
   const [positions, setPositions] = useState([]);
-  const [raw, setRaw] = useState([]); // NEW
+  const [raw, setRaw] = useState([]);  
   const SCALE = 1 / 3185;
 
   useEffect(() => {
@@ -275,7 +279,7 @@ function GlonassMarkers({ setSelectedSatellite }) {   // NEW ARG
         const res = await fetch("/api/glonass");
         const data = await res.json();
 
-        setRaw(data); // NEW
+        setRaw(data);  
 
         const scaled = data.map((s) => ({
           x: s.cartesian.x * SCALE,
@@ -321,9 +325,9 @@ function GlonassMarkers({ setSelectedSatellite }) {   // NEW ARG
 }
 
 /* -------------------- GPS HANDLER -------------------- */
-function GPSMarkers({ setSelectedSatellite }) {   // NEW ARG
+function GPSMarkers({ setSelectedSatellite }) {    
   const [positions, setPositions] = useState([]);
-  const [raw, setRaw] = useState([]); // NEW
+  const [raw, setRaw] = useState([]);  
   const SCALE = 1 / 3185;
 
   useEffect(() => {
@@ -332,7 +336,7 @@ function GPSMarkers({ setSelectedSatellite }) {   // NEW ARG
         const res = await fetch("/api/gps");
         const data = await res.json();
 
-        setRaw(data); // NEW
+        setRaw(data);  
 
         const scaled = data.map((s) => ({
           x: s.cartesian.x * SCALE,
@@ -378,9 +382,9 @@ function GPSMarkers({ setSelectedSatellite }) {   // NEW ARG
 }
 
 /* -------------------- Iridium HANDLER -------------------- */
-function IridiumMarkers({ setSelectedSatellite }) {   // NEW ARG
+function IridiumMarkers({ setSelectedSatellite }) {    
   const [positions, setPositions] = useState([]);
-  const [raw, setRaw] = useState([]); // NEW
+  const [raw, setRaw] = useState([]);  
   const SCALE = 1 / 3185;
 
   useEffect(() => {
@@ -389,7 +393,7 @@ function IridiumMarkers({ setSelectedSatellite }) {   // NEW ARG
         const res = await fetch("/api/iridium");
         const data = await res.json();
 
-        setRaw(data); // NEW
+        setRaw(data);  
 
         const scaled = data.map((s) => ({
           x: s.cartesian.x * SCALE,
@@ -442,9 +446,9 @@ function IridiumMarkers({ setSelectedSatellite }) {   // NEW ARG
 }
 
 /* -------------------- OneWeb HANDLER -------------------- */
-function OneWebMarkers({ setSelectedSatellite }) {   // NEW ARG
+function OneWebMarkers({ setSelectedSatellite }) {    
   const [positions, setPositions] = useState([]);
-  const [raw, setRaw] = useState([]); // NEW
+  const [raw, setRaw] = useState([]);  
   const SCALE = 1 / 3185;
 
   useEffect(() => {
@@ -453,7 +457,7 @@ function OneWebMarkers({ setSelectedSatellite }) {   // NEW ARG
         const res = await fetch("/api/oneweb");
         const data = await res.json();
 
-        setRaw(data); // NEW
+        setRaw(data);  
 
         const scaled = data.map((s) => ({
           x: s.cartesian.x * SCALE,
@@ -498,9 +502,9 @@ function OneWebMarkers({ setSelectedSatellite }) {   // NEW ARG
   );
 }
 /* -------------------- Active HANDLER -------------------- */
-function TLEMarkers({ selectedCountries, setSelectedSatellite }) {   // NEW ARG
+function TLEMarkers({ selectedCountries, setSelectedSatellite }) {    
   const [positions, setPositions] = useState([]);
-  const [raw, setRaw] = useState([]); // NEW
+  const [raw, setRaw] = useState([]);  
   const SCALE = 1 / 3185;
 
   useEffect(() => {
@@ -509,7 +513,7 @@ function TLEMarkers({ selectedCountries, setSelectedSatellite }) {   // NEW ARG
         const res = await fetch("/api/active");
         const data = await res.json();
 
-        setRaw(data); // NEW
+        setRaw(data);  
 
         const filtered = data.filter(
           (s) =>
@@ -596,13 +600,15 @@ export default function GlobePage() {
   const [showIridium, setShowIridium] = useState(true);
   const [showOneWeb, setShowOneWeb] = useState(true);
   const [showTLE, setShowTLE] = useState(true);
+  const [panelOpen, setPanelOpen] = useState(true);
+
 
   const [filterOptions, setFilterOptions] = useState([]);
   const [selectedCountries, setSelectedCountries] = useState([]);
 
-  const [selectedSatellite, setSelectedSatellite] = useState(null);  // NEW
+  const [selectedSatellite, setSelectedSatellite] = useState(null);   
 
-  // 🛰️ Fetch unique country codes from /api/active
+  //not used anymore
   useEffect(() => {
     async function fetchCountries() {
       try {
@@ -624,6 +630,7 @@ export default function GlobePage() {
 
   return (
     <div className="h-screen w-full relative">
+      <Header />
 
       {/* === Floating Info Card === */}
       {selectedSatellite && (
@@ -652,40 +659,75 @@ export default function GlobePage() {
       )}
 
       {/* --- Control panel  --- */}
-      <div className="absolute top-4 left-4 z-10 bg-black/50 text-white px-3 py-2 rounded space-y-2 w-56">
-        <label className="block">
-          <input type="checkbox" checked={showISS} onChange={(e) => setShowISS(e.target.checked)} /> Show ISS
-        </label>
-        <label className="block">
-          <input type="checkbox" checked={showStarlink} onChange={(e) => setShowStarlink(e.target.checked)} /> Show Starlink
-        </label>
-        <label className="block">
-          <input type="checkbox" checked={showBeidou} onChange={(e) => setShowBeidou(e.target.checked)} /> Show Beidou
-        </label>
-        <label className="block">
-          <input type="checkbox" checked={showGlobalStar} onChange={(e) => setShowGlobalStar(e.target.checked)} /> Show GlobalStar
-        </label>
-        <label className="block">
-          <input type="checkbox" checked={showGlonass} onChange={(e) => setShowGlonass(e.target.checked)} /> Show Glonass
-        </label>
-        <label className="block">
-          <input type="checkbox" checked={showGPS} onChange={(e) => setShowGPS(e.target.checked)} /> Show GPS
-        </label>
-        <label className="block">
-          <input type="checkbox" checked={showIridium} onChange={(e) => setShowIridium(e.target.checked)} /> Show Iridium
-        </label>
-        <label className="block">
-          <input type="checkbox" checked={showOneWeb} onChange={(e) => setShowOneWeb(e.target.checked)} /> Show OneWeb
-        </label>
-        <label className="block">
-          <input type="checkbox" checked={showTLE} onChange={(e) => setShowTLE(e.target.checked)} /> Show Other Active
-        </label>
+      <div className="ascrocuus absolute top-1/2 -translate-y-1/2 left-4 z-20 flex items-center pointer-events-none">
+
+        {/* Toggle button*/}
+        <button
+          onClick={() => setPanelOpen(!panelOpen)}
+          className="pointer-events-auto bg-black/40 hover:bg-black/60 text-white rounded-r px-2 py-6 transition-all"
+        >
+          {panelOpen ? "<" : ">"}
+        </button>
+
+        {/* Animated Panel */}
+        <div
+          className={`
+            pointer-events-auto bg-black/50 text-white rounded-l space-y-2 overflow-hidden 
+            transition-[clip-path,opacity] duration-300 ease-in-out
+            ${panelOpen
+              ? "opacity-100 clip-path-[inset(0%_0%_0%_0%)]"
+              : "opacity-0 clip-path-[inset(0%_100%_0%_0%)]"
+            }
+          `}
+          style={{ width: "14rem" }}  
+        >
+          <div className="px-3 py-2 space-y-2">
+            <label className="block">
+              <input type="checkbox" checked={showISS} onChange={(e) => setShowISS(e.target.checked)} /> ISS
+            </label>
+
+            <label className="block">
+              <input type="checkbox" checked={showStarlink} onChange={(e) => setShowStarlink(e.target.checked)} /> Starlink
+            </label>
+
+            <label className="block">
+              <input type="checkbox" checked={showBeidou} onChange={(e) => setShowBeidou(e.target.checked)} /> Beidou
+            </label>
+
+            <label className="block">
+              <input type="checkbox" checked={showGlobalStar} onChange={(e) => setShowGlobalStar(e.target.checked)} /> GlobalStar
+            </label>
+
+            <label className="block">
+              <input type="checkbox" checked={showGlonass} onChange={(e) => setShowGlonass(e.target.checked)} /> Glonass
+            </label>
+
+            <label className="block">
+              <input type="checkbox" checked={showGPS} onChange={(e) => setShowGPS(e.target.checked)} /> GPS
+            </label>
+
+            <label className="block">
+              <input type="checkbox" checked={showIridium} onChange={(e) => setShowIridium(e.target.checked)} /> Iridium
+            </label>
+
+            <label className="block">
+              <input type="checkbox" checked={showOneWeb} onChange={(e) => setShowOneWeb(e.target.checked)} /> OneWeb
+            </label>
+
+            <label className="block">
+              <input type="checkbox" checked={showTLE} onChange={(e) => setShowTLE(e.target.checked)} /> Other Active Satellites
+            </label>
+          </div>
+        </div>
       </div>
+      <Footer />
+
+
 
       {/* --- 3D Scene --- */}
       <Canvas
         camera={{ position: [0, 0, 6], fov: 45 }}
-        onPointerMissed={() => setSelectedSatellite(null)}   // NEW
+        onPointerMissed={() => setSelectedSatellite(null)}    
       >
         <color attach="background" args={["#02050a"]} />
         <ambientLight intensity={0.15} color="#5ca9ff" />

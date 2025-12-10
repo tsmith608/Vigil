@@ -1,5 +1,27 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Asrocuus';
+  src: url('/fonts/SynteticAsrocuus-rvYm7.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Science';
+  src: url('/fonts/science.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+.science {
+  font-family: 'Science', sans-serif;
+}
+
+.asrocuus {
+  font-family: 'Asrocuus', sans-serif;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -22,5 +44,6 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Asrocuus', sans-serif;
+
 }
