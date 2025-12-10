@@ -64,8 +64,9 @@ function Earth({children}) {
 }
 
 /* -------------------- ISS HANDLER -------------------- */
-function ISSMarker({ setSelectedSatellite }) {    
+function ISSMarker({ setSelectedSatellite, onLoaded }) {    
   const markerRef = useRef();
+  const hasLoadedOnce = useRef(false);
 
   useEffect(() => {
     async function fetchISS() {
@@ -81,6 +82,11 @@ function ISSMarker({ setSelectedSatellite }) {
         }
       } catch (err) {
         console.error("ISS fetch error:", err);
+      } finally {
+        if (!hasLoadedOnce.current) {
+          onLoaded?.();
+          hasLoadedOnce.current = true;
+        }
       }
     }
 
@@ -102,10 +108,11 @@ function ISSMarker({ setSelectedSatellite }) {
 }
 
 /* -------------------- StarLink HANDLER -------------------- */
-function StarlinkMarkers({ setSelectedSatellite }) {  
+function StarlinkMarkers({ setSelectedSatellite, onLoaded }) {  
   const [positions, setPositions] = useState([]);
   const [raw, setRaw] = useState([]); 
   const SCALE = 1 / 3185;
+  const hasLoadedOnce = useRef(false);
 
   useEffect(() => {
     async function fetchStarlink() {
@@ -123,7 +130,12 @@ function StarlinkMarkers({ setSelectedSatellite }) {
         setPositions(scaled);
       } catch (err) {
         console.error("Starlink fetch error:", err);
-      }
+      } finally {
+        if (!hasLoadedOnce.current) {
+          onLoaded?.();
+          hasLoadedOnce.current = true;
+        }
+      } 
     }
     fetchStarlink();
   }, []);
@@ -156,10 +168,11 @@ function StarlinkMarkers({ setSelectedSatellite }) {
   );
 }
 /* -------------------- Beidou HANDLER -------------------- */
-function BeidouMarkers({ setSelectedSatellite }) {   
+function BeidouMarkers({ setSelectedSatellite, onLoaded }) {   
   const [positions, setPositions] = useState([]);
   const [raw, setRaw] = useState([]); 
   const SCALE = 1 / 3185;
+  const hasLoadedOnce = useRef(false);
 
   useEffect(() => {
     async function fetchBeidou() {
@@ -177,6 +190,11 @@ function BeidouMarkers({ setSelectedSatellite }) {
         setPositions(scaled);
       } catch (err) {
         console.error("Beidou fetch error:", err);
+      } finally {
+        if (!hasLoadedOnce.current) {
+          onLoaded?.();
+          hasLoadedOnce.current = true;
+        }
       }
     }
     fetchBeidou();
@@ -213,10 +231,11 @@ function BeidouMarkers({ setSelectedSatellite }) {
 }
 
 /* -------------------- GlobalStar HANDLER -------------------- */
-function GlobalStarMarkers({ setSelectedSatellite }) {   
+function GlobalStarMarkers({ setSelectedSatellite, onLoaded }) {   
   const [positions, setPositions] = useState([]);
   const [raw, setRaw] = useState([]);  
   const SCALE = 1 / 3185;
+  const hasLoadedOnce = useRef(false);
 
   useEffect(() => {
     async function fetchGlobalStar() {
@@ -234,6 +253,11 @@ function GlobalStarMarkers({ setSelectedSatellite }) {
         setPositions(scaled);
       } catch (err) {
         console.error("GlobalStar fetch error:", err);
+      } finally {
+        if (!hasLoadedOnce.current) {
+          onLoaded?.();
+          hasLoadedOnce.current = true;
+        }
       }
     }
     fetchGlobalStar();
@@ -268,10 +292,11 @@ function GlobalStarMarkers({ setSelectedSatellite }) {
 }
 
 /* -------------------- Glonass HANDLER -------------------- */
-function GlonassMarkers({ setSelectedSatellite }) {    
+function GlonassMarkers({ setSelectedSatellite, onLoaded }) {    
   const [positions, setPositions] = useState([]);
   const [raw, setRaw] = useState([]);  
   const SCALE = 1 / 3185;
+  const hasLoadedOnce = useRef(false);
 
   useEffect(() => {
     async function fetchGlonass() {
@@ -289,6 +314,11 @@ function GlonassMarkers({ setSelectedSatellite }) {
         setPositions(scaled);
       } catch (err) {
         console.error("Glonass fetch error:", err);
+      } finally {
+        if (!hasLoadedOnce.current) {
+          onLoaded?.();
+          hasLoadedOnce.current = true;
+        }
       }
     }
     fetchGlonass();
@@ -325,10 +355,11 @@ function GlonassMarkers({ setSelectedSatellite }) {
 }
 
 /* -------------------- GPS HANDLER -------------------- */
-function GPSMarkers({ setSelectedSatellite }) {    
+function GPSMarkers({ setSelectedSatellite, onLoaded }) {    
   const [positions, setPositions] = useState([]);
   const [raw, setRaw] = useState([]);  
   const SCALE = 1 / 3185;
+  const hasLoadedOnce = useRef(false);
 
   useEffect(() => {
     async function fetchGPS() {
@@ -346,6 +377,11 @@ function GPSMarkers({ setSelectedSatellite }) {
         setPositions(scaled);
       } catch (err) {
         console.error("GPS fetch error:", err);
+      } finally {
+        if (!hasLoadedOnce.current) {
+          onLoaded?.();
+          hasLoadedOnce.current = true;
+        }
       }
     }
     fetchGPS();
@@ -382,10 +418,11 @@ function GPSMarkers({ setSelectedSatellite }) {
 }
 
 /* -------------------- Iridium HANDLER -------------------- */
-function IridiumMarkers({ setSelectedSatellite }) {    
+function IridiumMarkers({ setSelectedSatellite, onLoaded }) {    
   const [positions, setPositions] = useState([]);
   const [raw, setRaw] = useState([]);  
   const SCALE = 1 / 3185;
+  const hasLoadedOnce = useRef(false);
 
   useEffect(() => {
     async function fetchIridium() {
@@ -403,6 +440,11 @@ function IridiumMarkers({ setSelectedSatellite }) {
         setPositions(scaled);
       } catch (err) {
         console.error("Iridium fetch error:", err);
+      } finally {
+        if (!hasLoadedOnce.current) {
+          onLoaded?.();
+          hasLoadedOnce.current = true;
+        }
       }
     }
     fetchIridium();
@@ -446,10 +488,11 @@ function IridiumMarkers({ setSelectedSatellite }) {
 }
 
 /* -------------------- OneWeb HANDLER -------------------- */
-function OneWebMarkers({ setSelectedSatellite }) {    
+function OneWebMarkers({ setSelectedSatellite, onLoaded }) {    
   const [positions, setPositions] = useState([]);
   const [raw, setRaw] = useState([]);  
   const SCALE = 1 / 3185;
+  const hasLoadedOnce = useRef(false);
 
   useEffect(() => {
     async function fetchOneWeb() {
@@ -467,6 +510,11 @@ function OneWebMarkers({ setSelectedSatellite }) {
         setPositions(scaled);
       } catch (err) {
         console.error("OneWeb fetch error:", err);
+      } finally {
+        if (!hasLoadedOnce.current) {
+          onLoaded?.();
+          hasLoadedOnce.current = true;
+        }
       }
     }
     fetchOneWeb();
@@ -502,11 +550,12 @@ function OneWebMarkers({ setSelectedSatellite }) {
   );
 }
 /* -------------------- Active HANDLER -------------------- */
-function TLEMarkers({ selectedCountries, setSelectedSatellite }) {    
+function TLEMarkers({ selectedCountries, setSelectedSatellite, onLoaded }) {   
+  const hasLoadedOnce = useRef(false); 
   const [positions, setPositions] = useState([]);
   const [raw, setRaw] = useState([]);  
   const SCALE = 1 / 3185;
-
+  
   useEffect(() => {
     async function fetchActive() {
       try {
@@ -533,6 +582,11 @@ function TLEMarkers({ selectedCountries, setSelectedSatellite }) {
         setPositions(scaled);
       } catch (err) {
         console.error("TLE fetch error:", err);
+      } finally {
+      if (!hasLoadedOnce.current) {
+        onLoaded?.();
+        hasLoadedOnce.current = true;
+        }
       }
     }
 
@@ -591,6 +645,45 @@ function ZoomHandler() {
 
 /* -------------------- MAIN PAGE -------------------- */
 export default function GlobePage() {
+  const TOTAL_CONSTELLATIONS = 9;
+
+  const [remainingLoads, setRemainingLoads] = useState(TOTAL_CONSTELLATIONS);
+  const [isLoading, setIsLoading] = useState(true);
+  const [shouldRenderLoader, setShouldRenderLoader] = useState(true);
+  const [loadingStep, setLoadingStep] = useState(0);
+
+
+  function onLoaded() {
+  console.log("%c onLoaded CALLED", "color: yellow; font-weight: bold;");
+  setRemainingLoads(prev => {
+    console.log("Remaining before:", prev, " → after:", prev - 1);
+    return prev - 1;
+  });
+}
+
+useEffect(() => {
+  // Reveal lines one by one while loading
+  const timers = [
+    setTimeout(() => setLoadingStep(1), 700),
+    setTimeout(() => setLoadingStep(2), 1400),
+    setTimeout(() => setLoadingStep(3), 2100),
+  ];
+
+  return () => timers.forEach(clearTimeout);
+}, []);
+
+
+  useEffect(() => {
+  if (remainingLoads === 0) {
+    // start fade-out
+    setIsLoading(false);
+
+    // wait for CSS transition before unmount
+    setTimeout(() => setShouldRenderLoader(false), 700);
+  }
+}, [remainingLoads]);
+
+
   const [showISS, setShowISS] = useState(true);
   const [showStarlink, setShowStarlink] = useState(true);
   const [showBeidou, setShowBeidou] = useState(true);
@@ -601,11 +694,8 @@ export default function GlobePage() {
   const [showOneWeb, setShowOneWeb] = useState(true);
   const [showTLE, setShowTLE] = useState(true);
   const [panelOpen, setPanelOpen] = useState(true);
-
-
   const [filterOptions, setFilterOptions] = useState([]);
   const [selectedCountries, setSelectedCountries] = useState([]);
-
   const [selectedSatellite, setSelectedSatellite] = useState(null);   
 
   //not used anymore
@@ -624,9 +714,9 @@ export default function GlobePage() {
         console.error("Country list fetch error:", err);
       }
     }
-
     fetchCountries();
   }, []);
+
 
   return (
     <div className="h-screen w-full relative">
@@ -640,7 +730,7 @@ export default function GlobePage() {
           w-[350px] backdrop-blur-md z-50 animate-slide-up
         ">
           <div className="flex justify-between mb-2">
-            <h2 className="text-lg font-bold">{selectedSatellite.name}</h2>
+            <h2 className="Arial text-lg font-bold">{selectedSatellite.name}</h2>
             <button onClick={() => setSelectedSatellite(null)}>✖</button>
           </div>
 
@@ -659,7 +749,7 @@ export default function GlobePage() {
       )}
 
       {/* --- Control panel  --- */}
-      <div className="ascrocuus absolute top-1/2 -translate-y-1/2 left-4 z-20 flex items-center pointer-events-none">
+      <div className="asrocuus absolute top-1/2 -translate-y-1/2 left-4 z-20 flex items-center pointer-events-none">
 
         {/* Toggle button*/}
         <button
@@ -722,6 +812,61 @@ export default function GlobePage() {
       </div>
       <Footer />
 
+      {/* --- Loading Overlay --- */}
+      {shouldRenderLoader && (
+  <div
+    className="fixed inset-0 bg-black text-white 
+               flex flex-col items-center justify-center
+               transition-opacity duration-700 
+               z-50"
+    style={{
+      opacity: isLoading ? 1 : 0,
+      pointerEvents: isLoading ? "auto" : "none",
+      willChange: "opacity",      
+      transform: "translateZ(0)"   
+    }}
+  >
+    {/* Loading Text */}
+    <p className="science text-xl mb-6 animate-pulse">Loading Vigil</p>
+
+    {/* Animated Loader SVG */}
+    <svg
+      viewBox="0 0 57 60"
+      xmlns="http://www.w3.org/2000/svg"
+      stroke="hsla(0, 0%, 100%, 1.00)"
+      width="60"
+      height="60"
+      className="mt-2"
+    >
+      <g fill="none" fillRule="evenodd">
+        <g transform="translate(1 1)" strokeWidth="3">
+          <circle cx="5" cy="50" r="5">
+            <animate attributeName="cy" dur="2.2s"
+              values="50;5;50;50" repeatCount="indefinite" />
+            <animate attributeName="cx" dur="2.2s"
+              values="5;27;49;5" repeatCount="indefinite" />
+          </circle>
+
+          <circle cx="27" cy="5" r="5">
+            <animate attributeName="cy" dur="2.2s"
+              values="5;50;50;5" repeatCount="indefinite" />
+            <animate attributeName="cx" dur="2.2s"
+              values="27;49;5;27" repeatCount="indefinite" />
+          </circle>
+
+          <circle cx="49" cy="50" r="5">
+            <animate attributeName="cy" dur="2.2s"
+              values="50;50;5;50" repeatCount="indefinite" />
+            <animate attributeName="cx" dur="2.2s"
+              values="49;5;27;49" repeatCount="indefinite" />
+          </circle>
+        </g>
+      </g>
+    </svg>
+  </div>
+)}
+
+
 
 
       {/* --- 3D Scene --- */}
@@ -734,17 +879,16 @@ export default function GlobePage() {
         <directionalLight position={[3, 2, 5]} intensity={1.2} color="#7fc7ff" />
 
         <Earth>
-          {showISS && <ISSMarker setSelectedSatellite={setSelectedSatellite} />}
-          {showStarlink && <StarlinkMarkers setSelectedSatellite={setSelectedSatellite} />}
-          {showBeidou && <BeidouMarkers setSelectedSatellite={setSelectedSatellite} />}
-          {showGlobalStar && <GlobalStarMarkers setSelectedSatellite={setSelectedSatellite} />}
-          {showGlonass && <GlonassMarkers setSelectedSatellite={setSelectedSatellite} />}
-          {showGPS && <GPSMarkers setSelectedSatellite={setSelectedSatellite} />}
-          {showIridium && <IridiumMarkers setSelectedSatellite={setSelectedSatellite} />}
-          {showOneWeb && <OneWebMarkers setSelectedSatellite={setSelectedSatellite} />}
-          {showTLE && <TLEMarkers selectedCountries={selectedCountries} setSelectedSatellite={setSelectedSatellite} />}
+          {showISS && <ISSMarker setSelectedSatellite={setSelectedSatellite} onLoaded={onLoaded} />}
+          {showStarlink && <StarlinkMarkers setSelectedSatellite={setSelectedSatellite} onLoaded={onLoaded} />}
+          {showBeidou && <BeidouMarkers setSelectedSatellite={setSelectedSatellite} onLoaded={onLoaded} />}
+          {showGlobalStar && <GlobalStarMarkers setSelectedSatellite={setSelectedSatellite} onLoaded={onLoaded} />}
+          {showGlonass && <GlonassMarkers setSelectedSatellite={setSelectedSatellite} onLoaded={onLoaded} />}
+          {showGPS && <GPSMarkers setSelectedSatellite={setSelectedSatellite} onLoaded={onLoaded} />}
+          {showIridium && <IridiumMarkers setSelectedSatellite={setSelectedSatellite} onLoaded={onLoaded} />}
+          {showOneWeb && <OneWebMarkers setSelectedSatellite={setSelectedSatellite} onLoaded={onLoaded} />}
+          {showTLE && <TLEMarkers selectedCountries={selectedCountries} setSelectedSatellite={setSelectedSatellite} onLoaded={onLoaded} />}
         </Earth>
-
         <ZoomHandler />
       </Canvas>
     </div>

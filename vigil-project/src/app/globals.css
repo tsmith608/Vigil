@@ -45,5 +45,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'Asrocuus', sans-serif;
+  font-family: 'Science', sans-serif;
+  font-family: 'Arial', sans-serif;
 
 }
