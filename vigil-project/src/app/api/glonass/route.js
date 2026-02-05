@@ -16,7 +16,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // helps on some Windows setups
 
 export async function GET() {
   try {
-    console.log("📥 Loading BEIDOU TLEs from DB...");
+    console.log("📥 Loading GLONASS TLEs from DB...");
 
         const res = await pool.query(`
         SELECT name, satnum, line1, line2

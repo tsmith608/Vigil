@@ -1,4 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,200..900;1,200..900&display=swap');
 @import "tailwindcss";
+
+.serif-font {
+  font-family: 'Crimson Pro', serif;
+}
+
+/* Spinner Animations */
+.spinner-dot-1,
+.spinner-dot-2,
+.spinner-dot-3 {
+  transform-box: view-box;
+}
+
+@keyframes orbit1 {
+
+  0%,
+  100% {
+    transform: translate(5px, 50px);
+  }
+
+  33% {
+    transform: translate(27px, 5px);
+  }
+
+  66% {
+    transform: translate(49px, 50px);
+  }
+}
+
+@keyframes orbit2 {
+
+  0%,
+  100% {
+    transform: translate(27px, 5px);
+  }
+
+  33% {
+    transform: translate(49px, 50px);
+  }
+
+  66% {
+    transform: translate(5px, 50px);
+  }
+}
+
+@keyframes orbit3 {
+
+  0%,
+  100% {
+    transform: translate(49px, 50px);
+  }
+
+  33% {
+    transform: translate(5px, 50px);
+  }
+
+  66% {
+    transform: translate(27px, 5px);
+  }
+}
+
+.spinner-dot-1 {
+  animation: orbit1 2.2s infinite linear;
+}
+
+.spinner-dot-2 {
+  animation: orbit2 2.2s infinite linear;
+}
+
+.spinner-dot-3 {
+  animation: orbit3 2.2s infinite linear;
+}
 
 @font-face {
   font-family: 'Asrocuus';
@@ -7,6 +79,7 @@
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: 'Science';
   src: url('/fonts/science.otf') format('opentype');
@@ -14,12 +87,49 @@
   font-style: normal;
   font-display: swap;
 }
+
 .science {
   font-family: 'Science', sans-serif;
 }
 
 .asrocuus {
   font-family: 'Asrocuus', sans-serif;
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.glass-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Custom Toggle Switch */
+.toggle-checkbox:checked {
+  right: 0;
+  border-color: #00ffcc;
+}
+
+.toggle-checkbox:checked+.toggle-label {
+  background-color: #00ffcc22;
+  border-color: #00ffcc55;
+}
+
+.toggle-checkbox:checked+.toggle-label .toggle-dot {
+  transform: translateX(100%);
+  background-color: #00ffcc;
 }
 
 :root {
@@ -44,8 +154,6 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Asrocuus', sans-serif;
-  font-family: 'Science', sans-serif;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Crimson Pro', serif;
 
 }

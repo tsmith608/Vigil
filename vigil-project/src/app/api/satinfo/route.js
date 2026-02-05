@@ -18,7 +18,9 @@ export async function GET(req) {
         intldes_year,
         inclination_deg,
         raan_deg,
-        eccentricity
+        eccentricity,
+        line1,
+        line2
       FROM public.tles
       WHERE satnum = $1
       LIMIT 1
