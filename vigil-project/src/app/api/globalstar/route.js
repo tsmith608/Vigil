@@ -1,15 +1,9 @@
 import { getSatelliteCartesian } from "@lib/propagate";
 import { pool } from "@lib/db";
 import * as satellite from "satellite.js";
-import fs from "fs";
-import path from "path";
 
 const CONSTELLATION_NAME = "GLOBALSTAR";
 const FEED_URL = `https://celestrak.org/NORAD/elements/gp.php?GROUP=${CONSTELLATION_NAME.toLowerCase()}&FORMAT=tle`;
-
-const FILE_PATH = path.join(process.cwd(), "src/app/api/globalstar/globalstar.tle");
-const REFRESH_INTERVAL = 8 * 60 * 60 * 1000; // 8 hours
-let lastFetch = 0;
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // helps on some Windows setups
 
@@ -17,21 +11,21 @@ export async function GET() {
   try {
     console.log("📥 Loading GLOBALSTAR TLEs from DB...");
 
-        const res = await pool.query(`
+    const res = await pool.query(`
         SELECT name, satnum, line1, line2
         FROM public.tles
         WHERE constellation = 'globalstar'
         ORDER BY satnum
         `);
 
-        const tles = res.rows.map(r => ({
-        name: r.name,
-        satnum: r.satnum,
-        line1: r.line1,
-        line2: r.line2,
-        }));
+    const tles = res.rows.map(r => ({
+      name: r.name,
+      satnum: r.satnum,
+      line1: r.line1,
+      line2: r.line2,
+    }));
 
-        console.log(`📄 Retrieved ${tles.length} GLOBALSTAR TLE entries from DB`);
+    console.log(`📄 Retrieved ${tles.length} GLOBALSTAR TLE entries from DB`);
 
     const nowDate = new Date();
     const gmst = satellite.gstime(nowDate);

@@ -1,32 +1,26 @@
 import { getSatelliteCartesian } from "@lib/propagate";
 import { pool } from "@lib/db";
 import * as satellite from "satellite.js";
-import fs from "fs";
-import path from "path";
-
-const FILE_PATH = path.join(process.cwd(), "src/app/api/starlink/starlink.tle");
-const REFRESH_INTERVAL = 8 * 60 * 60 * 1000; // 8 hours
-let lastFetch = 0;
 
 export async function GET(request) {
   try {
     console.log("📥 Loading STARLINK TLEs from DB...");
 
-        const res = await pool.query(`
+    const res = await pool.query(`
         SELECT name, satnum, line1, line2
         FROM public.tles
         WHERE constellation = 'starlink'
         ORDER BY satnum
         `);
 
-        const tles = res.rows.map(r => ({
-        name: r.name,
-        satnum: r.satnum,
-        line1: r.line1,
-        line2: r.line2,
-        }));
+    const tles = res.rows.map(r => ({
+      name: r.name,
+      satnum: r.satnum,
+      line1: r.line1,
+      line2: r.line2,
+    }));
 
-        console.log(`📄 Retrieved ${tles.length} STARLINK TLE entries from DB`);
+    console.log(`📄 Retrieved ${tles.length} STARLINK TLE entries from DB`);
 
     // Propagate each satellite once for current position
     const nowDate = new Date();
